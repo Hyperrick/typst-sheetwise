@@ -2,9 +2,10 @@
 
 Arrange print items on press sheets in Typst.
 
-Sheetwise is for small print-imposition jobs where you design one item and need
-Typst to build the printable sheet: business cards, labels, stickers, coupons,
-tickets, postcards, and small booklet proofs.
+Sheetwise is for practical print-imposition workflows where you need to turn
+Typst content or finished PDFs into production-ready print sheets: business
+cards, labels, stickers, coupons, tickets, postcards, flyer grids, mixed sorts,
+duplex sheets, cut-stack jobs, and booklet proofs.
 
 It focuses on practical print terms:
 
@@ -47,17 +48,44 @@ Multiple sorts on one sheet:
 
 ![Sheetwise mixed sorts preview](assets/mixed-sorts.svg)
 
-Cut-stack numbering for tickets:
+Cut-stack numbering for tickets. The example creates three output sheets; the
+numbers run through the printed stack so each cut pile stays sequential after
+cutting.
 
-![Sheetwise cut-stack tickets preview](assets/cut-stack-tickets.svg)
+**Cut-stack sheet 1/3**
+
+![Sheetwise cut-stack tickets sheet 1 preview](assets/cut-stack-tickets-sheet-1.svg)
+
+**Cut-stack sheet 2/3**
+
+![Sheetwise cut-stack tickets sheet 2 preview](assets/cut-stack-tickets-sheet-2.svg)
+
+**Cut-stack sheet 3/3**
+
+![Sheetwise cut-stack tickets sheet 3 preview](assets/cut-stack-tickets-sheet-3.svg)
 
 Duplex front/back sheet alignment:
 
 ![Sheetwise duplex gang-up preview](assets/duplex-gangup.svg)
 
-Saddle-stitch PDF imposition:
+Saddle-stitch PDF imposition. The example takes an 8-page reader-order PDF and
+turns it into two physical sheets with front/back printer spreads.
 
-![Sheetwise saddle-stitch imposition preview](assets/saddle-stitch.svg)
+**Saddle-stitch sheet 1 front: source pages 8 and 1**
+
+![Sheetwise saddle-stitch sheet 1 front preview](assets/saddle-stitch-sheet-1-front.svg)
+
+**Saddle-stitch sheet 1 back: source pages 2 and 7**
+
+![Sheetwise saddle-stitch sheet 1 back preview](assets/saddle-stitch-sheet-1-back.svg)
+
+**Saddle-stitch sheet 2 front: source pages 6 and 3**
+
+![Sheetwise saddle-stitch sheet 2 front preview](assets/saddle-stitch-sheet-2-front.svg)
+
+**Saddle-stitch sheet 2 back: source pages 4 and 5**
+
+![Sheetwise saddle-stitch sheet 2 back preview](assets/saddle-stitch-sheet-2-back.svg)
 
 White-backed crop marks on dark artwork:
 
