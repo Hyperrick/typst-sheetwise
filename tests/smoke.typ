@@ -1,4 +1,4 @@
-#import "../lib.typ": gangup, grid-plan, paper-size, saddle-stitch-plan
+#import "../lib.typ": cut-stack, gangup, grid-plan, mixed-gangup, paper-size, saddle-stitch-plan
 
 #let a4 = paper-size("a4")
 #assert.eq(a4.width, 210mm)
@@ -60,3 +60,39 @@ Smoke tests passed.
 )[
   #rect(width: 100%, height: 100%, fill: rgb("#fff8eb"))
 ]
+
+#pagebreak()
+
+#mixed-gangup(
+  paper: "a6",
+  item-size: (35mm, 20mm),
+  rows: 2,
+  columns: 2,
+  margin: 10mm,
+  gap: 0mm,
+  order: "reverse",
+  marks: (crop: true, crop-mode: "grid"),
+  items: (
+    (label: "A", copies: 2, body: [#rect(width: 100%, height: 100%, fill: rgb("#eef7ff"))]),
+    (label: "B", copies: 1, body: [#rect(width: 100%, height: 100%, fill: rgb("#f1ffe8"))]),
+  ),
+)
+
+#pagebreak()
+
+#cut-stack(
+  paper: "a6",
+  item-size: (35mm, 20mm),
+  rows: 2,
+  columns: 2,
+  margin: 10mm,
+  gap: 0mm,
+  count: 5,
+  stack-size: 2,
+  order: "reverse",
+  marks: (crop: true, crop-mode: "grid"),
+  item: n => [
+    #rect(width: 100%, height: 100%, fill: rgb("#fff0f0"))
+    #align(center + horizon)[#n]
+  ],
+)

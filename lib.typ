@@ -37,6 +37,16 @@
   fold: false,
 )
 
+#let _disabled-marks = (
+  crop: false,
+  crop-mode: "auto",
+  bleed: false,
+  safe: false,
+  registration: false,
+  color-bar: false,
+  fold: false,
+)
+
 #let _positive(value, name) = {
   if value <= 0pt {
     panic("sheetwise: `" + name + "` must be greater than zero.")
@@ -49,6 +59,45 @@
     panic("sheetwise: `" + name + "` must not be negative.")
   }
   value
+}
+
+#let _integer(value, name) = {
+  if type(value) != int {
+    panic("sheetwise: `" + name + "` must be an integer.")
+  }
+  value
+}
+
+#let _non-negative-int(value, name) = {
+  let value = _integer(value, name)
+  if value < 0 {
+    panic("sheetwise: `" + name + "` must not be negative.")
+  }
+  value
+}
+
+#let _positive-int(value, name) = {
+  let value = _integer(value, name)
+  if value < 1 {
+    panic("sheetwise: `" + name + "` must be at least 1.")
+  }
+  value
+}
+
+#let _grid-count(value, name) = {
+  if value == auto {
+    auto
+  } else {
+    _positive-int(value, name)
+  }
+}
+
+#let _one-of(value, allowed, message) = {
+  if allowed.contains(value) {
+    value
+  } else {
+    panic(message)
+  }
 }
 
 #let _has-key(dict, key) = dict.keys().contains(key)
@@ -69,23 +118,23 @@
   result
 }
 
-#let _normalize-marks(marks, proof: false) = {
+#let _normalize-marks(marks) = {
   if marks == true {
     _default-marks
   } else if marks == false or marks == none {
-    (
-      crop: false,
-      crop-mode: "auto",
-      bleed: false,
-      safe: false,
-      registration: false,
-      color-bar: false,
-      fold: false,
-    )
+    _disabled-marks
   } else if type(marks) == dictionary {
     _merge(_default-marks, marks)
   } else {
     panic("sheetwise: `marks` must be a boolean, `none`, or a dictionary.")
+  }
+}
+
+#let _normalize-mark-style(mark-style) = {
+  if type(mark-style) == dictionary {
+    _merge(_default-mark-style, mark-style)
+  } else {
+    panic("sheetwise: `mark-style` must be a dictionary.")
   }
 }
 
@@ -102,6 +151,14 @@
   } else {
     panic("sheetwise: `marks.crop-mode` must be `auto`, `per-item`, or `grid`.")
   }
+}
+
+#let _validate-order(order) = {
+  _one-of(order, ("forward", "reverse"), "sheetwise: `order` must be `forward` or `reverse`.")
+}
+
+#let _order-index(order, index, total) = {
+  if order == "reverse" { total - 1 - index } else { index }
 }
 
 #let _normalize-slug(slug, meta: (:)) = {
@@ -192,6 +249,12 @@
 }
 
 #let _orient-item(item, item-orientation) = {
+  let item-orientation = _one-of(
+    item-orientation,
+    ("auto", "original", "portrait", "landscape"),
+    "sheetwise: `item-orientation` must be `auto`, `original`, `portrait`, or `landscape`.",
+  )
+
   if item-orientation == "original" {
     item
   } else if item-orientation == "portrait" {
@@ -208,8 +271,6 @@
     }
   } else if item-orientation == "auto" {
     item
-  } else {
-    panic("sheetwise: `item-orientation` must be `auto`, `original`, `portrait`, or `landscape`.")
   }
 }
 
@@ -223,12 +284,12 @@
     _size(paper, "paper")
   }
 
+  let orientation = _one-of(orientation, ("portrait", "landscape"), "sheetwise: `orientation` must be `portrait` or `landscape`.")
+
   if orientation == "portrait" {
     size
-  } else if orientation == "landscape" {
-    (width: size.height, height: size.width)
   } else {
-    panic("sheetwise: `orientation` must be `portrait` or `landscape`.")
+    (width: size.height, height: size.width)
   }
 }
 
@@ -244,6 +305,8 @@
   let base-item = _size(item-size, "item-size")
   let margin = _size(margin, "margin", positive: false)
   let gap = _size(gap, "gap", positive: false)
+  let rows = _grid-count(rows, "rows")
+  let columns = _grid-count(columns, "columns")
   let usable-width = sheet.width - margin.width * 2
   let usable-height = sheet.height - margin.height * 2
 
@@ -312,6 +375,19 @@
 
 #let _slot-from-row-column(plan, row, col) = row * plan.columns + col
 
+#let _validate-flip(flip) = {
+  _one-of(flip, ("long-edge", "short-edge", "none"), "sheetwise: `flip` must be `long-edge`, `short-edge`, or `none`.")
+}
+
+#let _validate-duplex-back(duplex, back, back-name, function-name) = {
+  if duplex and back == none {
+    panic("sheetwise: `" + function-name + "` needs `" + back-name + "` when `duplex: true`.")
+  }
+  if not duplex and back != none {
+    panic("sheetwise: `" + back-name + "` requires `duplex: true`.")
+  }
+}
+
 #let _duplex-slot(plan, slot, flip) = {
   let col = calc.rem(slot, plan.columns)
   let row = calc.floor(slot / plan.columns)
@@ -322,18 +398,13 @@
     _slot-from-row-column(plan, plan.rows - 1 - row, col)
   } else if flip == "none" {
     slot
-  } else {
-    panic("sheetwise: `flip` must be `long-edge`, `short-edge`, or `none`.")
   }
 }
 
 #let _validate-cut-mode(cut-mode, plan, bleed) = {
+  let cut-mode = _one-of(cut-mode, ("single", "double"), "sheetwise: `cut-mode` must be `single` or `double`.")
   if cut-mode == "single" {
     return
-  }
-
-  if cut-mode != "double" {
-    panic("sheetwise: `cut-mode` must be `single` or `double`.")
   }
 
   if plan.columns > 1 {
@@ -353,6 +424,13 @@
       panic("sheetwise: `cut-mode: \"double\"` needs vertical `gap >= 2 * bleed`.")
     }
   }
+}
+
+#let _validate-safe(plan, safe) = {
+  if safe > 0pt and (safe * 2 >= plan.item.width or safe * 2 >= plan.item.height) {
+    panic("sheetwise: `safe` must be smaller than half the item size.")
+  }
+  safe
 }
 
 #let _rotated(body, angle) = {
@@ -383,51 +461,64 @@
 }
 
 #let _crop-mark-offset(bleed, style) = {
-  let explicit = _get(style, "offset", _default-mark-style.offset)
+  let explicit = style.offset
   if explicit != auto {
     return _non-negative(explicit, "mark-style.offset")
   }
 
   if bleed > 0pt {
-    bleed + _non-negative(_get(style, "bleed-offset", _default-mark-style.at("bleed-offset")), "mark-style.bleed-offset")
+    bleed + _non-negative(style.at("bleed-offset"), "mark-style.bleed-offset")
   } else {
-    _non-negative(_get(style, "no-bleed-offset", _default-mark-style.at("no-bleed-offset")), "mark-style.no-bleed-offset")
+    _non-negative(style.at("no-bleed-offset"), "mark-style.no-bleed-offset")
+  }
+}
+
+#let _crop-mark-params(bleed, style) = (
+  length: _positive(style.length, "mark-style.length"),
+  color: style.color,
+  thickness: _positive(style.thickness, "mark-style.thickness"),
+  offset: _crop-mark-offset(bleed, style),
+)
+
+#let _mark-backing(style) = {
+  if style.knockout {
+    (
+      padding: _non-negative(style.at("knockout-padding"), "mark-style.knockout-padding"),
+      color: style.at("knockout-color"),
+    )
+  } else {
+    none
   }
 }
 
 #let _backed-hline(x, y, width, color, thickness, style) = {
-  if _get(style, "knockout", _default-mark-style.knockout) {
-    let padding = _non-negative(_get(style, "knockout-padding", _default-mark-style.at("knockout-padding")), "mark-style.knockout-padding")
-    let backing = _get(style, "knockout-color", _default-mark-style.at("knockout-color"))
-    _hline(x - padding, y - padding, width + padding * 2, backing, thickness + padding * 2)
+  let backing = _mark-backing(style)
+  if backing != none {
+    _hline(x - backing.padding, y - backing.padding, width + backing.padding * 2, backing.color, thickness + backing.padding * 2)
   }
   _hline(x, y, width, color, thickness)
 }
 
 #let _backed-vline(x, y, height, color, thickness, style) = {
-  if _get(style, "knockout", _default-mark-style.knockout) {
-    let padding = _non-negative(_get(style, "knockout-padding", _default-mark-style.at("knockout-padding")), "mark-style.knockout-padding")
-    let backing = _get(style, "knockout-color", _default-mark-style.at("knockout-color"))
-    _vline(x - padding, y - padding, height + padding * 2, backing, thickness + padding * 2)
+  let backing = _mark-backing(style)
+  if backing != none {
+    _vline(x - backing.padding, y - backing.padding, height + backing.padding * 2, backing.color, thickness + backing.padding * 2)
   }
   _vline(x, y, height, color, thickness)
 }
 
 #let _crop-marks(x, y, width, height, bleed, style) = {
-  let mark-length = _get(style, "length", _default-mark-style.length)
-  let color = _get(style, "color", _default-mark-style.color)
-  let thickness = _get(style, "thickness", _default-mark-style.thickness)
-  let offset = _crop-mark-offset(bleed, style)
+  let mark = _crop-mark-params(bleed, style)
 
-  _backed-hline(x - offset - mark-length, y, mark-length, color, thickness, style)
-  _backed-hline(x + width + offset, y, mark-length, color, thickness, style)
-  _backed-hline(x - offset - mark-length, y + height, mark-length, color, thickness, style)
-  _backed-hline(x + width + offset, y + height, mark-length, color, thickness, style)
+  _backed-hline(x - mark.offset - mark.length, y, mark.length, mark.color, mark.thickness, style)
+  _backed-hline(x + width + mark.offset, y, mark.length, mark.color, mark.thickness, style)
+  _backed-hline(x - mark.offset - mark.length, y + height, mark.length, mark.color, mark.thickness, style)
+  _backed-hline(x + width + mark.offset, y + height, mark.length, mark.color, mark.thickness, style)
 
-  _backed-vline(x, y - offset - mark-length, mark-length, color, thickness, style)
-  _backed-vline(x + width, y - offset - mark-length, mark-length, color, thickness, style)
-  _backed-vline(x, y + height + offset, mark-length, color, thickness, style)
-  _backed-vline(x + width, y + height + offset, mark-length, color, thickness, style)
+  _backed-vline(x, y - mark.offset - mark.length, mark.length, mark.color, mark.thickness, style)
+  _backed-vline(x + width, y - mark.offset - mark.length, mark.length, mark.color, mark.thickness, style)
+  _backed-vline(x, y + height + mark.offset, mark.length, mark.color, mark.thickness, style)
+  _backed-vline(x + width, y + height + mark.offset, mark.length, mark.color, mark.thickness, style)
 }
 
 #let _push-unique(values, value) = {
@@ -437,40 +528,74 @@
   values
 }
 
-#let _grid-crop-marks(plan, bleed, style) = {
-  let mark-length = _get(style, "length", _default-mark-style.length)
-  let color = _get(style, "color", _default-mark-style.color)
-  let thickness = _get(style, "thickness", _default-mark-style.thickness)
-  let offset = _crop-mark-offset(bleed, style)
-  let grid-left = plan.origin-x
-  let grid-top = plan.origin-y
-  let grid-right = plan.origin-x + plan.grid-width
-  let grid-bottom = plan.origin-y + plan.grid-height
-
-  let x-lines = ()
-  for col in range(plan.columns) {
-    let left = plan.origin-x + col * (plan.item.width + plan.gap.width)
-    let right = left + plan.item.width
-    x-lines = _push-unique(x-lines, left)
-    x-lines = _push-unique(x-lines, right)
+#let _grid-crop-marks(plan, bleed, style, slots: auto) = {
+  let mark = _crop-mark-params(bleed, style)
+  let slots = if slots == auto { range(plan.slots) } else { slots }
+  if slots.len() == 0 {
+    return
   }
 
+  let x-lines = ()
   let y-lines = ()
-  for row in range(plan.rows) {
-    let top = plan.origin-y + row * (plan.item.height + plan.gap.height)
-    let bottom = top + plan.item.height
-    y-lines = _push-unique(y-lines, top)
-    y-lines = _push-unique(y-lines, bottom)
+  let grid-left = none
+  let grid-top = none
+  let grid-right = none
+  let grid-bottom = none
+
+  for slot in slots {
+    if slot >= 0 and slot < plan.slots {
+      let pos = _slot-position(plan, slot)
+      let right = pos.x + plan.item.width
+      let bottom = pos.y + plan.item.height
+
+      x-lines = _push-unique(x-lines, pos.x)
+      x-lines = _push-unique(x-lines, right)
+      y-lines = _push-unique(y-lines, pos.y)
+      y-lines = _push-unique(y-lines, bottom)
+
+      if grid-left == none or pos.x < grid-left {
+        grid-left = pos.x
+      }
+      if grid-top == none or pos.y < grid-top {
+        grid-top = pos.y
+      }
+      if grid-right == none or right > grid-right {
+        grid-right = right
+      }
+      if grid-bottom == none or bottom > grid-bottom {
+        grid-bottom = bottom
+      }
+    }
+  }
+
+  if grid-left == none {
+    return
   }
 
   for x in x-lines {
-    _backed-vline(x, grid-top - offset - mark-length, mark-length, color, thickness, style)
-    _backed-vline(x, grid-bottom + offset, mark-length, color, thickness, style)
+    _backed-vline(x, grid-top - mark.offset - mark.length, mark.length, mark.color, mark.thickness, style)
+    _backed-vline(x, grid-bottom + mark.offset, mark.length, mark.color, mark.thickness, style)
   }
 
   for y in y-lines {
-    _backed-hline(grid-left - offset - mark-length, y, mark-length, color, thickness, style)
-    _backed-hline(grid-right + offset, y, mark-length, color, thickness, style)
+    _backed-hline(grid-left - mark.offset - mark.length, y, mark.length, mark.color, mark.thickness, style)
+    _backed-hline(grid-right + mark.offset, y, mark.length, mark.color, mark.thickness, style)
+  }
+}
+
+#let _occupied-slots-from-count(plan, count) = {
+  let slots = ()
+  for slot in range(plan.slots) {
+    if slot < count {
+      slots.push(slot)
+    }
+  }
+  slots
+}
+
+#let _draw-grid-crop-marks(plan, bleed, mark-style, sheet-marks, crop-mode, slots) = {
+  if sheet-marks.crop and crop-mode == "grid" {
+    _grid-crop-marks(plan, bleed, mark-style, slots: slots)
   }
 }
 
@@ -549,14 +674,12 @@
   body,
   bleed: 0pt,
   safe: 0pt,
-  marks: true,
+  marks: _default-marks,
   proof: false,
   mark-style: _default-mark-style,
   label: none,
   crop-mode: "per-item",
 ) = {
-  let marks = _normalize-marks(marks)
-
   if (proof or marks.bleed) and bleed > 0pt {
     _outline(pos.x - bleed, pos.y - bleed, plan.item.width + bleed * 2, plan.item.height + bleed * 2, _bleed-color)
   }
@@ -585,13 +708,52 @@
   }
 }
 
-#let _sheet(sheet, body, slug: none, meta: (:), marks: false, fold-x: auto, fold-y: auto) = {
-  let marks = _normalize-marks(marks)
+#let _draw-plan-slot(
+  plan,
+  slot,
+  body,
+  bleed: 0pt,
+  safe: 0pt,
+  marks: _default-marks,
+  proof: false,
+  mark-style: _default-mark-style,
+  label: none,
+  crop-mode: "per-item",
+) = {
+  _draw-slot(
+    _slot-position(plan, slot),
+    plan,
+    body,
+    bleed: bleed,
+    safe: safe,
+    marks: marks,
+    proof: proof,
+    mark-style: mark-style,
+    label: label,
+    crop-mode: crop-mode,
+  )
+}
+
+#let _sheet(sheet, body, slug: none, meta: (:), marks: _disabled-marks, fold-x: auto, fold-y: auto) = {
   block(width: sheet.width, height: sheet.height)[
     #body
     #_sheet-marks(sheet, marks, fold-x: fold-x, fold-y: fold-y)
     #_slug(sheet, _normalize-slug(slug, meta: meta))
   ]
+}
+
+#let _sheet-meta(sheet-number, sheet-count, side, plan: none, bleed: none, cut-mode: none) = {
+  let meta = (sheet-number: sheet-number, sheet-count: sheet-count, side: side)
+  if plan != none {
+    meta.insert("plan", plan)
+  }
+  if bleed != none {
+    meta.insert("bleed", bleed)
+  }
+  if cut-mode != none {
+    meta.insert("cut-mode", cut-mode)
+  }
+  meta
 }
 
 #let grid-plan(
@@ -605,17 +767,104 @@
   columns: auto,
 ) = {
   let sheet = paper-size(paper, orientation: orientation)
-  let margin = if type(margin) == dictionary or type(margin) == array {
-    margin
-  } else {
-    (margin, margin)
-  }
-  let gap = if type(gap) == dictionary or type(gap) == array {
-    gap
-  } else {
-    (gap, gap)
-  }
+  let margin = _pair(margin, "margin")
+  let gap = _pair(gap, "gap")
   _grid-plan(sheet, item-size, margin, gap, rows, columns, item-orientation: item-orientation)
+}
+
+#let _draw-context(sheet, plan, bleed, safe, marks, mark-style, crop-mode) = (
+  sheet: sheet,
+  plan: plan,
+  bleed: bleed,
+  safe: safe,
+  marks: marks,
+  mark-style: mark-style,
+  crop-mode: crop-mode,
+)
+
+#let _imposition-context(
+  paper,
+  orientation,
+  item-size,
+  item-orientation,
+  margin,
+  gap,
+  rows,
+  columns,
+  cut-mode,
+  bleed,
+  safe,
+  marks,
+  mark-style,
+) = {
+  let sheet = paper-size(paper, orientation: orientation)
+  let margin = _pair(margin, "margin")
+  let gap = _pair(gap, "gap")
+  let bleed = _non-negative(bleed, "bleed")
+  let safe = _non-negative(safe, "safe")
+  let plan = _grid-plan(sheet, item-size, margin, gap, rows, columns, item-orientation: item-orientation)
+  _validate-cut-mode(cut-mode, plan, bleed)
+  let safe = _validate-safe(plan, safe)
+  let marks = _normalize-marks(marks)
+  let mark-style = _normalize-mark-style(mark-style)
+  _draw-context(sheet, plan, bleed, safe, marks, mark-style, _crop-mode(marks, plan, cut-mode))
+}
+
+#let _draw-imposed-slot(
+  ctx,
+  slot,
+  body,
+  proof: false,
+  label: none,
+) = {
+  _draw-plan-slot(
+    ctx.plan,
+    slot,
+    body,
+    bleed: ctx.bleed,
+    safe: ctx.safe,
+    marks: ctx.marks,
+    proof: proof,
+    mark-style: ctx.mark-style,
+    label: label,
+    crop-mode: ctx.crop-mode,
+  )
+}
+
+#let _draw-imposed-grid-marks(ctx, occupied-slots) = {
+  _draw-grid-crop-marks(ctx.plan, ctx.bleed, ctx.mark-style, ctx.marks, ctx.crop-mode, occupied-slots)
+}
+
+#let _imposed-sheet(
+  ctx,
+  body,
+  slug: none,
+  meta: (:),
+  fold-x: auto,
+  fold-y: auto,
+) = {
+  _sheet(
+    ctx.sheet,
+    body,
+    slug: slug,
+    meta: meta,
+    marks: ctx.marks,
+    fold-x: fold-x,
+    fold-y: fold-y,
+  )
+}
+
+#let _copy-count(copies, plan) = {
+  let copies = if copies == auto {
+    plan.slots
+  } else {
+    _non-negative-int(copies, "copies")
+  }
+
+  if copies > plan.slots {
+    panic("sheetwise: `copies` cannot exceed the selected grid slots.")
+  }
+  copies
 }
 
 #let gangup(
@@ -641,77 +890,78 @@
   flip: "long-edge",
   body,
 ) = {
-  let sheet = paper-size(paper, orientation: orientation)
-  let margin = _pair(margin, "margin")
-  let gap = _pair(gap, "gap")
-  let bleed = _non-negative(bleed, "bleed")
-  let safe = _non-negative(safe, "safe")
-  let plan = _grid-plan(sheet, item-size, margin, gap, rows, columns, item-orientation: item-orientation)
-  _validate-cut-mode(cut-mode, plan, bleed)
-  let copies = if copies == auto { plan.slots } else { copies }
-  let sheet-marks = _normalize-marks(marks)
-  let crop-mode = _crop-mode(sheet-marks, plan, cut-mode)
+  _validate-duplex-back(duplex, back, "back", "gangup")
+
+  let ctx = _imposition-context(
+    paper,
+    orientation,
+    item-size,
+    item-orientation,
+    margin,
+    gap,
+    rows,
+    columns,
+    cut-mode,
+    bleed,
+    safe,
+    marks,
+    mark-style,
+  )
+  let sheet = ctx.sheet
+  let plan = ctx.plan
+  let copies = _copy-count(copies, plan)
+  let flip = if duplex { _validate-flip(flip) } else { flip }
 
   set page(width: sheet.width, height: sheet.height, margin: 0pt)
-  _sheet(
-    sheet,
+  _imposed-sheet(
+    ctx,
     slug: slug,
-    marks: sheet-marks,
-    meta: (sheet-number: 1, sheet-count: if duplex and back != none { 2 } else { 1 }, side: "front", plan: plan, bleed: bleed, cut-mode: cut-mode),
+    meta: _sheet-meta(1, if duplex { 2 } else { 1 }, "front", plan: plan, bleed: ctx.bleed, cut-mode: cut-mode),
   )[
+    #let occupied-slots = _occupied-slots-from-count(plan, copies)
     #for slot in range(plan.slots) {
       if slot < copies {
-        let pos = _slot-position(plan, slot)
-        _draw-slot(
-          pos,
-          plan,
+        _draw-imposed-slot(
+          ctx,
+          slot,
           body,
-          bleed: bleed,
-          safe: safe,
-          marks: sheet-marks,
           proof: proof,
-          mark-style: mark-style,
           label: str(slot + 1),
-          crop-mode: crop-mode,
         )
       }
     }
-    #if sheet-marks.crop and crop-mode == "grid" {
-      _grid-crop-marks(plan, bleed, mark-style)
-    }
+    #_draw-imposed-grid-marks(ctx, occupied-slots)
   ]
 
-  if duplex and back != none {
+  if duplex {
     pagebreak()
-    _sheet(
-      sheet,
+    _imposed-sheet(
+      ctx,
       slug: slug,
-      marks: sheet-marks,
-      meta: (sheet-number: 2, sheet-count: 2, side: "back", plan: plan, bleed: bleed, cut-mode: cut-mode),
+      meta: _sheet-meta(2, 2, "back", plan: plan, bleed: ctx.bleed, cut-mode: cut-mode),
     )[
+      #let occupied-slots = ()
       #for slot in range(plan.slots) {
         if slot < copies {
           let back-slot = _duplex-slot(plan, slot, flip)
-          let pos = _slot-position(plan, back-slot)
-          _draw-slot(
-            pos,
-            plan,
+          occupied-slots.push(back-slot)
+          _draw-imposed-slot(
+            ctx,
+            back-slot,
             _rotated(back, back-rotation),
-            bleed: bleed,
-            safe: safe,
-            marks: sheet-marks,
             proof: proof,
-            mark-style: mark-style,
             label: str(slot + 1) + " back",
-            crop-mode: crop-mode,
           )
         }
       }
-      #if sheet-marks.crop and crop-mode == "grid" {
-        _grid-crop-marks(plan, bleed, mark-style)
-      }
+      #_draw-imposed-grid-marks(ctx, occupied-slots)
     ]
   }
+}
+
+#let _pdf-image(source, page, width, height, fit: "stretch", alt: none, name: "page") = {
+  let page = _positive-int(page, name)
+  image(source, page: page, width: width, height: height, fit: fit, alt: alt)
 }
 
 #let gangup-pdf(
@@ -743,16 +993,20 @@
   back-rotation: 180deg,
   flip: "long-edge",
 ) = {
-  if duplex and back-source == none {
-    panic("sheetwise: `gangup-pdf` needs `back-source` when `duplex: true`.")
+  _validate-duplex-back(duplex, back-source, "back-source", "gangup-pdf")
+  let page = _positive-int(page, "page")
+  let back-page = if duplex {
+    _positive-int(back-page, "back-page")
+  } else {
+    back-page
   }
 
-  let front = image(source, page: page, width: 100%, height: 100%, fit: fit, alt: alt)
-  let back = if back-source == none {
-    none
-  } else {
+  let front = _pdf-image(source, page, 100%, 100%, fit: fit, alt: alt)
+  let back = if duplex {
     let resolved-fit = if back-fit == auto { fit } else { back-fit }
-    image(back-source, page: back-page, width: 100%, height: 100%, fit: resolved-fit, alt: back-alt)
+    _pdf-image(back-source, back-page, 100%, 100%, fit: resolved-fit, alt: back-alt, name: "back-page")
+  } else {
+    none
   }
 
   gangup(
@@ -781,24 +1035,29 @@
   ]
 }
 
-#let _total-copies(items) = {
-  let total = 0
-  for item in items {
-    total += _get(item, "copies", 1)
+#let _expanded-items(items) = {
+  if type(items) != array {
+    panic("sheetwise: `items` must be an array of dictionaries.")
   }
-  total
-}
 
-#let _item-at(index, items) = {
-  let pos = index
+  let records = ()
   for item in items {
-    let copies = _get(item, "copies", 1)
-    if pos < copies {
-      return item
+    if type(item) != dictionary {
+      panic("sheetwise: every `items` entry must be a dictionary.")
     }
-    pos -= copies
+    if not _has-key(item, "body") {
+      panic("sheetwise: every `items` entry must include `body`.")
+    }
+    let copies = _non-negative-int(_get(item, "copies", 1), "items.copies")
+    for copy in range(copies) {
+      records.push(item)
+    }
   }
-  none
+
+  if records.len() == 0 {
+    panic("sheetwise: `items` must include at least one copy.")
+  }
+  records
 }
 
 #let mixed-gangup(
@@ -827,16 +1086,27 @@
     panic("sheetwise: `items` is required.")
   }
 
-  let sheet = paper-size(paper, orientation: orientation)
-  let margin = _pair(margin, "margin")
-  let gap = _pair(gap, "gap")
-  let bleed = _non-negative(bleed, "bleed")
-  let safe = _non-negative(safe, "safe")
-  let plan = _grid-plan(sheet, item-size, margin, gap, rows, columns, item-orientation: item-orientation)
-  _validate-cut-mode(cut-mode, plan, bleed)
-  let sheet-marks = _normalize-marks(marks)
-  let crop-mode = _crop-mode(sheet-marks, plan, cut-mode)
-  let total = _total-copies(items)
+  let ctx = _imposition-context(
+    paper,
+    orientation,
+    item-size,
+    item-orientation,
+    margin,
+    gap,
+    rows,
+    columns,
+    cut-mode,
+    bleed,
+    safe,
+    marks,
+    mark-style,
+  )
+  let sheet = ctx.sheet
+  let plan = ctx.plan
+  let order = _validate-order(order)
+  let flip = if duplex { _validate-flip(flip) } else { flip }
+  let records = _expanded-items(items)
+  let total = records.len()
   let sheet-count = calc.ceil(total / plan.slots)
 
   set page(width: sheet.width, height: sheet.height, margin: 0pt)
@@ -845,73 +1115,59 @@
       pagebreak()
     }
 
-    _sheet(
-      sheet,
+    _imposed-sheet(
+      ctx,
       slug: slug,
-      marks: sheet-marks,
-      meta: (sheet-number: sheet-index + 1, sheet-count: sheet-count, side: "front", plan: plan, bleed: bleed, cut-mode: cut-mode),
+      meta: _sheet-meta(sheet-index + 1, sheet-count, "front", plan: plan, bleed: ctx.bleed, cut-mode: cut-mode),
     )[
+      #let occupied-slots = ()
       #for slot in range(plan.slots) {
         let index = sheet-index * plan.slots + slot
-        let source-index = if order == "reverse" { total - 1 - index } else { index }
-        let item = _item-at(source-index, items)
+        let source-index = _order-index(order, index, total)
+        let item = if source-index >= 0 and source-index < total { records.at(source-index) } else { none }
 
         if item != none {
-          let pos = _slot-position(plan, slot)
+          occupied-slots.push(slot)
           let label = _get(item, "label", str(source-index + 1))
-          _draw-slot(
-            pos,
-            plan,
+          _draw-imposed-slot(
+            ctx,
+            slot,
             item.body,
-            bleed: bleed,
-            safe: safe,
-            marks: sheet-marks,
             proof: proof,
-            mark-style: mark-style,
             label: label,
-            crop-mode: crop-mode,
           )
         }
       }
-      #if sheet-marks.crop and crop-mode == "grid" {
-        _grid-crop-marks(plan, bleed, mark-style)
-      }
+      #_draw-imposed-grid-marks(ctx, occupied-slots)
     ]
 
     if duplex {
       pagebreak()
-      _sheet(
-        sheet,
+      _imposed-sheet(
+        ctx,
         slug: slug,
-        marks: sheet-marks,
-        meta: (sheet-number: sheet-index + 1, sheet-count: sheet-count, side: "back", plan: plan, bleed: bleed, cut-mode: cut-mode),
+        meta: _sheet-meta(sheet-index + 1, sheet-count, "back", plan: plan, bleed: ctx.bleed, cut-mode: cut-mode),
       )[
+        #let occupied-slots = ()
         #for slot in range(plan.slots) {
           let index = sheet-index * plan.slots + slot
-          let source-index = if order == "reverse" { total - 1 - index } else { index }
-          let item = _item-at(source-index, items)
+          let source-index = _order-index(order, index, total)
+          let item = if source-index >= 0 and source-index < total { records.at(source-index) } else { none }
 
           if item != none and _has-key(item, "back") {
             let back-slot = _duplex-slot(plan, slot, flip)
-            let pos = _slot-position(plan, back-slot)
+            occupied-slots.push(back-slot)
             let label = _get(item, "label", str(source-index + 1))
-            _draw-slot(
-              pos,
-              plan,
+            _draw-imposed-slot(
+              ctx,
+              back-slot,
               _rotated(item.back, back-rotation),
-              bleed: bleed,
-              safe: safe,
-              marks: sheet-marks,
               proof: proof,
-              mark-style: mark-style,
               label: label + " back",
-              crop-mode: crop-mode,
             )
           }
         }
-        #if sheet-marks.crop and crop-mode == "grid" {
-          _grid-crop-marks(plan, bleed, mark-style)
-        }
+        #_draw-imposed-grid-marks(ctx, occupied-slots)
       ]
     }
   }
@@ -945,15 +1201,18 @@
   stack-flow
 }
 
-#let _record-index(sheet-index, slot, sheet-count, plan, flow, stack-flow) = {
-  let col = calc.rem(slot, plan.columns)
-  let row = calc.floor(slot / plan.columns)
+#let _resolve-stack-flow(flow, stack-flow) = {
   let stack-flow = if stack-flow == auto {
     _flow-from-name(flow)
   } else {
     stack-flow
   }
-  let stack-flow = _validate-stack-flow(stack-flow)
+  _validate-stack-flow(stack-flow)
+}
+
+#let _record-index(sheet-index, slot, sheet-count, plan, stack-flow) = {
+  let col = calc.rem(slot, plan.columns)
+  let row = calc.floor(slot / plan.columns)
 
   let record = 0
   let stride = 1
@@ -1010,21 +1269,34 @@
   if item == auto {
     panic("sheetwise: `item` is required.")
   }
+  let count = _positive-int(count, "count")
 
-  let sheet = paper-size(paper, orientation: orientation)
-  let margin = _pair(margin, "margin")
-  let gap = _pair(gap, "gap")
-  let bleed = _non-negative(bleed, "bleed")
-  let safe = _non-negative(safe, "safe")
-  let plan = _grid-plan(sheet, item-size, margin, gap, rows, columns, item-orientation: item-orientation)
-  _validate-cut-mode(cut-mode, plan, bleed)
-  let sheet-marks = _normalize-marks(marks)
-  let crop-mode = _crop-mode(sheet-marks, plan, cut-mode)
+  let ctx = _imposition-context(
+    paper,
+    orientation,
+    item-size,
+    item-orientation,
+    margin,
+    gap,
+    rows,
+    columns,
+    cut-mode,
+    bleed,
+    safe,
+    marks,
+    mark-style,
+  )
+  let sheet = ctx.sheet
+  let plan = ctx.plan
+  let order = _validate-order(order)
+  let resolved-stack-flow = _resolve-stack-flow(flow, stack-flow)
+  let minimum-sheet-count = calc.ceil(count / plan.slots)
   let sheet-count = if stack-size == auto {
-    calc.ceil(count / plan.slots)
+    minimum-sheet-count
   } else {
-    if stack-size < 1 {
-      panic("sheetwise: `stack-size` must be at least 1.")
+    let stack-size = _positive-int(stack-size, "stack-size")
+    if stack-size < minimum-sheet-count {
+      panic("sheetwise: `stack-size` is too small for `count` and the selected grid.")
     }
     stack-size
   }
@@ -1035,35 +1307,28 @@
       pagebreak()
     }
 
-    _sheet(
-      sheet,
+    _imposed-sheet(
+      ctx,
       slug: slug,
-      marks: sheet-marks,
-      meta: (sheet-number: sheet-index + 1, sheet-count: sheet-count, side: flow, plan: plan, bleed: bleed, cut-mode: cut-mode),
+      meta: _sheet-meta(sheet-index + 1, sheet-count, flow, plan: plan, bleed: ctx.bleed, cut-mode: cut-mode),
     )[
+      #let occupied-slots = ()
       #for slot in range(plan.slots) {
-        let record = _record-index(sheet-index, slot, sheet-count, plan, flow, stack-flow)
-        let record = if order == "reverse" { count - 1 - record } else { record }
+        let record = _record-index(sheet-index, slot, sheet-count, plan, resolved-stack-flow)
+        let record = _order-index(order, record, count)
 
         if record >= 0 and record < count {
-          let pos = _slot-position(plan, slot)
-          _draw-slot(
-            pos,
-            plan,
+          occupied-slots.push(slot)
+          _draw-imposed-slot(
+            ctx,
+            slot,
             item(record + 1),
-            bleed: bleed,
-            safe: safe,
-            marks: sheet-marks,
             proof: proof,
-            mark-style: mark-style,
             label: str(record + 1),
-            crop-mode: crop-mode,
           )
         }
       }
-      #if sheet-marks.crop and crop-mode == "grid" {
-        _grid-crop-marks(plan, bleed, mark-style)
-      }
+      #_draw-imposed-grid-marks(ctx, occupied-slots)
     ]
   }
 }
@@ -1083,34 +1348,26 @@
 }
 
 #let _padded-page-count(page-count, blank-policy) = {
+  let page-count = _positive-int(page-count, "page-count")
+  let blank-policy = _one-of(blank-policy, ("error", "end"), "sheetwise: `blank-policy` must be `error` or `end`.")
   let remainder = calc.rem(page-count, 4)
   if remainder == 0 {
     page-count
   } else if blank-policy == "end" {
     page-count + (4 - remainder)
-  } else if blank-policy == "error" {
-    panic("sheetwise: saddle-stitch page count must be a multiple of 4.")
   } else {
-    panic("sheetwise: `blank-policy` must be `error` or `end`.")
+    panic("sheetwise: saddle-stitch page count must be a multiple of 4.")
   }
 }
 
 #let _mirror-booklet(binding, reading-direction) = {
-  if binding != "left" and binding != "right" {
-    panic("sheetwise: `binding` must be `left` or `right`.")
-  }
-  if reading-direction != "ltr" and reading-direction != "rtl" {
-    panic("sheetwise: `reading-direction` must be `ltr` or `rtl`.")
-  }
+  let binding = _one-of(binding, ("left", "right"), "sheetwise: `binding` must be `left` or `right`.")
+  let reading-direction = _one-of(reading-direction, ("ltr", "rtl"), "sheetwise: `reading-direction` must be `ltr` or `rtl`.")
   binding == "right" or reading-direction == "rtl"
 }
 
-#let _creep-amount(creep, sheet-index, sheets) = {
-  if sheets <= 1 {
-    return 0pt
-  }
-
-  let max-creep = if type(creep) == dictionary {
+#let _creep-max(creep, sheets) = {
+  let value = if type(creep) == dictionary {
     if _has-key(creep, "paper-thickness") {
       creep.at("paper-thickness") * (sheets - 1)
     } else {
@@ -1120,6 +1377,14 @@
     creep
   }
 
+  _non-negative(value, "creep")
+}
+
+#let _creep-amount(max-creep, sheet-index, sheets) = {
+  if sheets <= 1 {
+    return 0pt
+  }
+
   max-creep * sheet-index / (sheets - 1)
 }
 
@@ -1127,13 +1392,14 @@
   box(width: width, height: height)[]
 }
 
-#let _pdf-page(source, number, width, height, dx: 0pt, source-page-count: auto) = {
+#let _pdf-page(source, number, width, height, dx: 0pt, source-page-count: auto, fit: "stretch", alt: none) = {
+  let number = _positive-int(number, "page")
   if source-page-count != auto and number > source-page-count {
     return _blank-page(width, height)
   }
 
   box(width: width, height: height)[
-    #move(dx: dx)[#image(source, page: number, width: width, height: height, fit: "stretch")]
+    #move(dx: dx)[#_pdf-image(source, number, width, height, fit: fit, alt: alt)]
   ]
 }
 
@@ -1207,10 +1473,7 @@
   marks: (registration: true, color-bar: true),
   slug: (job: "Duplex calibration", sheet: true),
 ) = {
-  if flip != "long-edge" and flip != "short-edge" and flip != "none" {
-    panic("sheetwise: `flip` must be `long-edge`, `short-edge`, or `none`.")
-  }
-
+  let flip = _validate-flip(flip)
   let sheet = paper-size(paper, orientation: orientation)
   let sheet-marks = _normalize-marks(marks)
 
@@ -1219,7 +1482,7 @@
     sheet,
     slug: slug,
     marks: sheet-marks,
-    meta: (sheet-number: 1, sheet-count: 2, side: "front"),
+    meta: _sheet-meta(1, 2, "front"),
   )[
     #_calibration-face("FRONT", "Print this side first. Flip mode: " + flip, sheet, rgb("#105ea8"))
   ]
@@ -1228,7 +1491,7 @@
     sheet,
     slug: slug,
     marks: sheet-marks,
-    meta: (sheet-number: 2, sheet-count: 2, side: "back"),
+    meta: _sheet-meta(2, 2, "back"),
   )[
     #_rotated(
       _calibration-face("BACK", "If this is upside down, change flip or back-rotation.", sheet, rgb("#a83a10")),
@@ -1240,6 +1503,8 @@
 #let saddle-stitch-pdf(
   source,
   page-count: auto,
+  fit: "stretch",
+  alt: none,
   paper: "a4",
   orientation: "landscape",
   trim-size: auto,
@@ -1260,6 +1525,9 @@
   if page-count == auto {
     panic("sheetwise: `page-count` is required.")
   }
+  if trim-size == auto {
+    panic("sheetwise: `trim-size` is required.")
+  }
 
   let padded-count = _padded-page-count(page-count, blank-policy)
   let mirror = _mirror-booklet(binding, reading-direction)
@@ -1267,10 +1535,16 @@
   let trim = _size(trim-size, "trim-size")
   let margin = _pair(margin, "margin")
   let plan = _grid-plan(sheet, trim, margin, (gap, 0pt), 1, 2)
+  let bleed = _non-negative(bleed, "bleed")
+  let safe = _validate-safe(plan, _non-negative(safe, "safe"))
   let sheets = calc.floor(padded-count / 4)
   let sides = ("front", "back")
   let sheet-marks = _normalize-marks(marks)
+  let mark-style = _normalize-mark-style(mark-style)
   let crop-mode = _crop-mode(sheet-marks, plan, "booklet")
+  let ctx = _draw-context(sheet, plan, bleed, safe, sheet-marks, mark-style, crop-mode)
+  let order = _validate-order(order)
+  let max-creep = _creep-max(creep, sheets)
 
   set page(width: sheet.width, height: sheet.height, margin: 0pt)
   for output-index in range(sheets * 2) {
@@ -1279,50 +1553,35 @@
     }
 
     let sheet-index-raw = calc.floor(output-index / 2)
-    let sheet-index = if order == "reverse" { sheets - 1 - sheet-index-raw } else { sheet-index-raw }
+    let sheet-index = _order-index(order, sheet-index-raw, sheets)
     let side = sides.at(calc.rem(output-index, 2))
     let pair = _saddle-pair(padded-count, sheet-index, side)
     if mirror {
       pair = (left: pair.right, right: pair.left)
     }
-    let creep-offset = _creep-amount(creep, sheet-index, sheets)
+    let creep-offset = _creep-amount(max-creep, sheet-index, sheets)
 
-    _sheet(
-      sheet,
+    _imposed-sheet(
+      ctx,
       slug: slug,
-      marks: sheet-marks,
       fold-x: sheet.width / 2,
-      meta: (sheet-number: sheet-index + 1, sheet-count: sheets, side: side, plan: plan, bleed: bleed, cut-mode: "booklet"),
+      meta: _sheet-meta(sheet-index + 1, sheets, side, plan: plan, bleed: ctx.bleed, cut-mode: "booklet"),
     )[
-      #let left-pos = _slot-position(plan, 0)
-      #let right-pos = _slot-position(plan, 1)
-      #_draw-slot(
-        left-pos,
-        plan,
-        _pdf-page(source, pair.left, trim.width, trim.height, dx: creep-offset, source-page-count: page-count),
-        bleed: bleed,
-        safe: safe,
-        marks: sheet-marks,
+      #_draw-imposed-slot(
+        ctx,
+        0,
+        _pdf-page(source, pair.left, trim.width, trim.height, dx: creep-offset, source-page-count: page-count, fit: fit, alt: alt),
         proof: proof,
-        mark-style: mark-style,
         label: str(pair.left),
-        crop-mode: crop-mode,
       )
-      #_draw-slot(
-        right-pos,
-        plan,
-        _pdf-page(source, pair.right, trim.width, trim.height, dx: -creep-offset, source-page-count: page-count),
-        bleed: bleed,
-        safe: safe,
-        marks: sheet-marks,
+      #_draw-imposed-slot(
+        ctx,
+        1,
+        _pdf-page(source, pair.right, trim.width, trim.height, dx: -creep-offset, source-page-count: page-count, fit: fit, alt: alt),
         proof: proof,
-        mark-style: mark-style,
         label: str(pair.right),
-        crop-mode: crop-mode,
       )
-      #if sheet-marks.crop and crop-mode == "grid" {
-        _grid-crop-marks(plan, bleed, mark-style)
-      }
+      #_draw-imposed-grid-marks(ctx, (0, 1))
     ]
   }
 }

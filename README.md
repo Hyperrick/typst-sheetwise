@@ -181,7 +181,14 @@ as already finished.
 If you need lower-level control, you can still use `gangup` directly and place
 the PDF yourself with `image("card.pdf", page: 1, width: 100%, height: 100%)`.
 
-See `examples/13-pdf-input-gangup.typ` for a complete PDF-input example.
+See `examples/13-pdf-input-gangup.typ` for a complete PDF-input example. It
+expects a finished source PDF first:
+
+```sh
+mkdir -p build
+typst compile --root . examples/01-single-design.typ build/business-card-source.pdf
+typst compile --root . examples/13-pdf-input-gangup.typ build/13-pdf-input-gangup.pdf
+```
 
 ## Quick Start
 
@@ -353,6 +360,9 @@ Use `stack-flow` for explicit finishing order. It takes the three axes
 (down rows). For example, `("deep", "right", "down")` means the first cut pile
 contains consecutive numbers.
 
+Use `stack-size` only when you need to force a specific number of sheets in the
+stack. It must be large enough to hold `count` with the selected grid.
+
 ### 6. Auto Item Orientation
 
 Use `item-orientation: "auto"` when the item may be rotated to fit more items
@@ -414,23 +424,7 @@ To inspect the printer spread order without rendering the PDF pages:
 ## Examples
 
 ```sh
-mkdir -p build examples/build
-typst compile examples/01-single-design.typ build/01-single-design.pdf
-typst compile --root . examples/02-gangup-auto.typ build/02-gangup-auto.pdf
-typst compile --root . examples/03-gangup-manual-grid.typ build/03-gangup-manual-grid.pdf
-typst compile --root . examples/04-mixed-sorts.typ build/04-mixed-sorts.pdf
-typst compile --root . examples/05-cut-stack-tickets.typ build/05-cut-stack-tickets.pdf
-typst compile --root . examples/06-booklet-source.typ examples/build/booklet-source.pdf
-typst compile --root . examples/07-saddle-stitch-pdf.typ build/07-saddle-stitch-pdf.pdf
-typst compile --root . examples/08-duplex-gangup.typ build/08-duplex-gangup.pdf
-typst compile --root . examples/09-duplex-calibration.typ build/09-duplex-calibration.pdf
-typst compile --root . examples/10-auto-orientation.typ build/10-auto-orientation.pdf
-typst compile --root . examples/11-saddle-report.typ build/11-saddle-report.pdf
-typst compile --root . examples/12-crop-mark-knockout.typ build/12-crop-mark-knockout.pdf
-typst compile --root . examples/01-single-design.typ examples/build/business-card-source.pdf
-typst compile --root . examples/13-pdf-input-gangup.typ build/13-pdf-input-gangup.pdf
-typst compile --root . examples/14-single-cut-grid-crop-marks.typ build/14-single-cut-grid-crop-marks.pdf
-typst compile --root . tests/smoke.typ build/smoke.pdf
+sh tests/run.sh
 ```
 
 ## API Notes
@@ -444,7 +438,8 @@ Common props:
 - `gap`: distance between trim boxes.
 - `cut-mode`: `"single"` or `"double"`.
 - `bleed`: artwork allowance outside the trim.
-- `safe`: safety-margin / safe-area guide for important content.
+- `safe`: safety-margin / safe-area guide for important content. It must be
+  smaller than half the item size.
 - `marks`: boolean or dictionary with `crop`, `crop-mode`, `bleed`, `safe`,
   `registration`, `color-bar`, and `fold`.
 - `mark-style`: crop-mark drawing options such as `length`, `thickness`,
@@ -489,16 +484,22 @@ Crop-mark offset:
 Workflow-specific props:
 
 - `duplex`, `back`, `flip`, `back-rotation`: generate and align a second side.
+  `back` / `back-source` require `duplex: true`; `duplex: true` requires a
+  matching back side.
+- `copies`: number of occupied slots on one `gangup` sheet. It cannot exceed
+  the selected grid slots.
 - `gangup-pdf`: impose a finished one-page PDF without writing the `image(...)`
   wrapper yourself. Use `read("file.pdf", encoding: none)` for local PDFs. Use
   `page`, `fit`, `back-source`, and `back-page` for PDF page selection and
-  duplex backs.
+  duplex backs. `page` and `back-page` are 1-based.
 - `stack-flow`: explicit cut-and-stack axis order, for example
   `("deep", "right", "down")`.
 - `blank-policy`, `binding`, `reading-direction`: booklet padding and spread
   direction.
+- `trim-size`: finished page size for `saddle-stitch-pdf`.
 - `creep`: booklet creep compensation as a length or dictionary such as
-  `(paper-thickness: 0.12mm)`.
+  `(paper-thickness: 0.12mm)`. It must not be negative.
+- `saddle-stitch-pdf` also accepts `fit` and `alt` for placed PDF pages.
 
 ## Current Limits
 
