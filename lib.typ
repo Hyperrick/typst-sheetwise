@@ -9,23 +9,26 @@
   tabloid: (width: 11in, height: 17in),
 )
 
+#let _mark-black = cmyk(0%, 0%, 0%, 100%)
+#let _paper-white = cmyk(0%, 0%, 0%, 0%)
+
 #let _default-mark-style = (
-  color: black,
+  color: _mark-black,
   length: 5mm,
   offset: auto,
   bleed-offset: 0pt,
   no-bleed-offset: 2mm,
   thickness: 0.25pt,
   knockout: true,
-  knockout-color: white,
+  knockout-color: _paper-white,
   knockout-padding: 0.7pt,
 )
 
-#let _proof-color = rgb("#1070c9")
-#let _bleed-color = rgb("#c94510")
-#let _safe-color = rgb("#10a35a")
-#let _label-color = rgb("#555555")
-#let _registration-color = rgb("#222222")
+#let _proof-color = cmyk(85%, 45%, 0%, 0%)
+#let _bleed-color = cmyk(0%, 70%, 90%, 0%)
+#let _safe-color = cmyk(70%, 0%, 70%, 0%)
+#let _label-color = cmyk(0%, 0%, 0%, 70%)
+#let _registration-color = cmyk(100%, 100%, 100%, 100%)
 
 #let _default-marks = (
   crop: true,
@@ -138,10 +141,22 @@
   }
 }
 
-#let _crop-mode(marks, plan, cut-mode) = {
+#let _bleed-only-double-gap(plan, bleed) = {
+  if bleed <= 0pt {
+    return false
+  }
+
+  let tight-horizontal-gap = plan.columns > 1 and plan.gap.width <= bleed * 2
+  let tight-vertical-gap = plan.rows > 1 and plan.gap.height <= bleed * 2
+  tight-horizontal-gap or tight-vertical-gap
+}
+
+#let _crop-mode(marks, plan, cut-mode, bleed) = {
   let mode = _get(marks, "crop-mode", _default-marks.at("crop-mode"))
   if mode == "auto" {
     if cut-mode == "single" and plan.gap.width == 0pt and plan.gap.height == 0pt {
+      "grid"
+    } else if cut-mode == "double" and _bleed-only-double-gap(plan, bleed) {
       "grid"
     } else {
       "per-item"
@@ -618,13 +633,13 @@
     cmyk(0%, 100%, 0%, 0%),
     cmyk(0%, 0%, 100%, 0%),
     cmyk(0%, 0%, 0%, 100%),
-    rgb("#ffffff"),
-    rgb("#808080"),
+    _paper-white,
+    cmyk(0%, 0%, 0%, 50%),
   )
 
   for i in range(colors.len()) {
     place(top + left, dx: x + i * width, dy: y)[
-      #rect(width: width, height: height, fill: colors.at(i), stroke: 0.2pt + black)
+      #rect(width: width, height: height, fill: colors.at(i), stroke: 0.2pt + _mark-black)
     ]
   }
 }
@@ -807,7 +822,7 @@
   let safe = _validate-safe(plan, safe)
   let marks = _normalize-marks(marks)
   let mark-style = _normalize-mark-style(mark-style)
-  _draw-context(sheet, plan, bleed, safe, marks, mark-style, _crop-mode(marks, plan, cut-mode))
+  _draw-context(sheet, plan, bleed, safe, marks, mark-style, _crop-mode(marks, plan, cut-mode, bleed))
 }
 
 #let _draw-imposed-slot(
@@ -1541,7 +1556,7 @@
   let sides = ("front", "back")
   let sheet-marks = _normalize-marks(marks)
   let mark-style = _normalize-mark-style(mark-style)
-  let crop-mode = _crop-mode(sheet-marks, plan, "booklet")
+  let crop-mode = _crop-mode(sheet-marks, plan, "booklet", bleed)
   let ctx = _draw-context(sheet, plan, bleed, safe, sheet-marks, mark-style, crop-mode)
   let order = _validate-order(order)
   let max-creep = _creep-max(creep, sheets)

@@ -3,9 +3,9 @@
 Arrange print items on press sheets in Typst.
 
 Sheetwise is for practical print-imposition workflows where you need to turn
-Typst content or finished PDFs into production-ready print sheets: business
-cards, labels, stickers, coupons, tickets, postcards, flyer grids, mixed
-versions, duplex sheets, cut-and-stack jobs, and booklet proofs.
+Typst content into print sheets: business cards, labels, stickers, coupons,
+tickets, postcards, flyer grids, mixed versions, duplex sheets,
+cut-and-stack jobs, and booklet proofs.
 
 It focuses on practical print terms:
 
@@ -103,7 +103,8 @@ Shared grid crop marks for zero-gap single cuts:
 - Automatic grid planning for named paper sizes such as A4, A3, SRA3, Letter,
   and custom sheet sizes.
 - Single-design gang-up, manual rows/columns, and mixed-version sheets.
-- Explicit PDF-first gang-up with `gangup-pdf`.
+- PDF-input gang-up with `gangup-pdf` for layout proofs and non-color-critical
+  files.
 - Single-cut and double-cut spacing with bleed validation.
 - Per-item crop marks for double cuts and shared grid crop marks for zero-gap
   single cuts.
@@ -174,9 +175,10 @@ typst compile card.typ card.pdf
 Use `read(..., encoding: none)` for local PDFs so the file path is resolved in
 your document before Sheetwise places the PDF page.
 
-This PDF-first workflow is the safer choice for external templates, full-page
-documents, invoices, flyers, booklet pages, or any design that should be treated
-as already finished.
+Note: Typst can place PDF pages, but it is not a PDF/X-preserving prepress
+engine. For press-ready external PDFs where spot colors, output intents, 1c
+black, or exact CMYK values must survive, use a dedicated PDF-level imposition
+tool.
 
 If you need lower-level control, you can still use `gangup` directly and place
 the PDF yourself with `image("card.pdf", page: 1, width: 100%, height: 100%)`.
@@ -453,7 +455,9 @@ Crop-mark offset:
 - Crop marks are drawn as a black mark over a white knockout rectangle so they
   stay readable on dark or busy artwork.
 - `marks.crop-mode: "auto"` uses shared `"grid"` marks for
-  `cut-mode: "single"` with `gap: 0mm`; otherwise it uses `"per-item"` marks.
+  `cut-mode: "single"` with `gap: 0mm`. It also uses `"grid"` for tight
+  double-cut layouts where the gap is only the two bleed allowances. Other
+  double-cut layouts use `"per-item"` marks.
 - `marks.crop-mode: "per-item"` draws crop marks around every print item. This
   is the right shape for double-cut layouts with a gutter or gap.
 - `marks.crop-mode: "grid"` draws one shared set of marks on the grid cut lines.
