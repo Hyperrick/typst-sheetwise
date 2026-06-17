@@ -1,7 +1,7 @@
 #import "../lib.typ": gangup-pdf
 
 #gangup-pdf(
-  "examples/build/business-card-source.pdf",
+  read("build/business-card-source.pdf", encoding: none),
   paper: "a4",
   item-size: (85mm, 55mm),
   margin: 12mm,

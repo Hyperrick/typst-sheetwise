@@ -163,13 +163,16 @@ typst compile card.typ card.pdf
 #import "@preview/sheetwise:0.1.0": gangup-pdf
 
 #gangup-pdf(
-  "card.pdf",
+  read("card.pdf", encoding: none),
   paper: "a4",
   item-size: (85mm, 55mm),
   bleed: 3mm,
   marks: (crop: true, bleed: true),
 )
 ```
+
+Use `read(..., encoding: none)` for local PDFs so the file path is resolved in
+your document before Sheetwise places the PDF page.
 
 This PDF-first workflow is the safer choice for external templates, full-page
 documents, invoices, flyers, booklet pages, or any design that should be treated
@@ -487,8 +490,9 @@ Workflow-specific props:
 
 - `duplex`, `back`, `flip`, `back-rotation`: generate and align a second side.
 - `gangup-pdf`: impose a finished one-page PDF without writing the `image(...)`
-  wrapper yourself. Use `page`, `fit`, `back-source`, and `back-page` for PDF
-  page selection and duplex backs.
+  wrapper yourself. Use `read("file.pdf", encoding: none)` for local PDFs. Use
+  `page`, `fit`, `back-source`, and `back-page` for PDF page selection and
+  duplex backs.
 - `stack-flow`: explicit cut-and-stack axis order, for example
   `("deep", "right", "down")`.
 - `blank-policy`, `binding`, `reading-direction`: booklet padding and spread
