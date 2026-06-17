@@ -15,6 +15,6 @@
   safe: 3mm,
   marks: (crop: true, registration: true, color-bar: true),
   proof: true,
-  slug: (job: "cut-stack tickets", sheet: true, grid: true),
+  slug: (job: "cut-and-stack tickets", sheet: true, grid: true),
   item: n => ticket(n),
 )

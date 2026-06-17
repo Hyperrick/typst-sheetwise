@@ -4,27 +4,30 @@ Arrange print items on press sheets in Typst.
 
 Sheetwise is for practical print-imposition workflows where you need to turn
 Typst content or finished PDFs into production-ready print sheets: business
-cards, labels, stickers, coupons, tickets, postcards, flyer grids, mixed sorts,
-duplex sheets, cut-stack jobs, and booklet proofs.
+cards, labels, stickers, coupons, tickets, postcards, flyer grids, mixed
+versions, duplex sheets, cut-and-stack jobs, and booklet proofs.
 
 It focuses on practical print terms:
 
-- **Nutzen / item**: the final trimmed piece.
-- **Druckbogen / sheet**: the paper sheet you print on.
-- **Trennschnitt / gap**: the spacing or cut strip between items.
-- **Beschnitt / bleed**: artwork area outside the final trim.
-- **Sicherheitsabstand / safe area**: inner guide for important content.
-- **Schnittmarken / crop marks**: marks showing where to cut.
-- **Schnitt im Stapel / cut-stack**: sheet order that stays sequential after
-  printing, stacking, cutting, and stacking the piles again.
-- **Rückstichheftung / saddle-stitch**: booklet imposition with optional
-  Bundverdrängung / creep compensation.
+- **Finished piece / print item**: one final trimmed item.
+- **Press sheet**: the larger sheet that is printed and then cut or folded.
+- **Trim size**: the final size after cutting.
+- **Gutter / gap**: space or a removable strip between adjacent items.
+- **Bleed**: artwork area extending beyond the final trim.
+- **Safety margin / safe area**: inner guide for important content.
+- **Crop marks / trim marks**: printer marks showing where to cut.
+- **Cut-and-stack**: imposition order that stays sequential after printing,
+  stacking, cutting, and restacking the piles.
+- **Saddle-stitch**: booklet binding with folded sheets nested and stitched on
+  the spine.
+- **Creep / shingling**: progressive page offset used to compensate for nested
+  saddle-stitched sheets.
 
 ## Use Cases
 
 - Repeat one design across a sheet for business cards, stickers, labels,
   coupons, postcards, or small product inserts.
-- Put multiple versions on one sheet, for example different names, sorts,
+- Put multiple versions on one sheet, for example different names, variants,
   colors, or languages.
 - Number tickets or personalized pieces so the stack stays in order after
   printing, cutting, and restacking.
@@ -44,25 +47,25 @@ Finished PDF input imposed on a sheet:
 
 ![Sheetwise finished PDF input preview](assets/pdf-input-gangup.svg)
 
-Multiple sorts on one sheet:
+Multiple versions on one sheet:
 
-![Sheetwise mixed sorts preview](assets/mixed-sorts.svg)
+![Sheetwise mixed versions preview](assets/mixed-sorts.svg)
 
-Cut-stack numbering for tickets. The example creates three output sheets; the
-numbers run through the printed stack so each cut pile stays sequential after
-cutting.
+Cut-and-stack numbering for tickets. The example creates three output sheets;
+the numbers run through the printed stack so each cut pile stays sequential
+after cutting.
 
-**Cut-stack sheet 1/3**
+**Cut-and-stack sheet 1/3**
 
-![Sheetwise cut-stack tickets sheet 1 preview](assets/cut-stack-tickets-sheet-1.svg)
+![Sheetwise cut-and-stack tickets sheet 1 preview](assets/cut-stack-tickets-sheet-1.svg)
 
-**Cut-stack sheet 2/3**
+**Cut-and-stack sheet 2/3**
 
-![Sheetwise cut-stack tickets sheet 2 preview](assets/cut-stack-tickets-sheet-2.svg)
+![Sheetwise cut-and-stack tickets sheet 2 preview](assets/cut-stack-tickets-sheet-2.svg)
 
-**Cut-stack sheet 3/3**
+**Cut-and-stack sheet 3/3**
 
-![Sheetwise cut-stack tickets sheet 3 preview](assets/cut-stack-tickets-sheet-3.svg)
+![Sheetwise cut-and-stack tickets sheet 3 preview](assets/cut-stack-tickets-sheet-3.svg)
 
 Duplex front/back sheet alignment:
 
@@ -99,12 +102,12 @@ Shared grid crop marks for zero-gap single cuts:
 
 - Automatic grid planning for named paper sizes such as A4, A3, SRA3, Letter,
   and custom sheet sizes.
-- Single-design gang-up, manual rows/columns, and mixed-sort sheets.
+- Single-design gang-up, manual rows/columns, and mixed-version sheets.
 - Explicit PDF-first gang-up with `gangup-pdf`.
 - Single-cut and double-cut spacing with bleed validation.
 - Per-item crop marks for double cuts and shared grid crop marks for zero-gap
   single cuts.
-- Cut-stack numbering with explicit stack flow.
+- Cut-and-stack numbering with explicit stack flow.
 - Duplex front/back generation with long-edge and short-edge flip handling.
 - Saddle-stitch PDF imposition with blank-page padding, right/left binding,
   reading direction, fold marks, and creep compensation.
@@ -231,11 +234,11 @@ Use `gangup` when the same item should be repeated across a sheet.
 Rows and columns default to `auto`, so Sheetwise fits the maximum possible
 number of items inside the selected sheet and margin.
 
-Use `cut-mode: "single"` for a shared cut line between adjacent items. Use
-`cut-mode: "double"` for a removable strip between items; when `bleed` is set,
+Use `cut-mode: "single"` for a shared trim line between adjacent items. Use
+`cut-mode: "double"` for a removable gutter between items; when `bleed` is set,
 Sheetwise requires `gap >= 2 * bleed`.
 
-For zero-gap Trennschnitt layouts, use shared grid crop marks. The default
+For zero-gap shared-trim layouts, use shared grid crop marks. The default
 `crop-mode: "auto"` selects this automatically when `cut-mode: "single"` and
 `gap: 0mm`, but you can set it explicitly:
 
@@ -254,7 +257,7 @@ For zero-gap Trennschnitt layouts, use shared grid crop marks. The default
 ```
 
 Use `crop-mode: "per-item"` for ordinary double-cut layouts with a gap, where
-each Nutzen keeps its own crop marks around its own trim box.
+each print item keeps its own crop marks around its own trim box.
 
 ### 2. Manual Rows And Columns
 
@@ -275,9 +278,9 @@ specific grid.
 ]
 ```
 
-### 3. Multiple Sorts On One Sheet
+### 3. Multiple Versions On One Sheet
 
-Use `mixed-gangup` for multiple versions on the same sheet.
+Use `mixed-gangup` for multiple design versions on the same sheet.
 
 ```typst
 #mixed-gangup(
@@ -321,7 +324,7 @@ back side.
 #duplex-calibration(paper: "a4", flip: "long-edge")
 ```
 
-### 5. Cut-Stack Tickets
+### 5. Cut-And-Stack Tickets
 
 Use `cut-stack` for numbered or personalized items that should remain in order
 after the printed stack is cut into piles.
@@ -338,9 +341,9 @@ after the printed stack is cut into piles.
 )
 ```
 
-The default `flow: "cut-stack"` places records down the stack first, then moves
-through the sheet positions. Use `flow: "n-up"` when you want ordinary sheet-by-
-sheet row-major filling.
+The default `flow: "cut-stack"` implements cut-and-stack imposition: records are
+placed down the stack first, then through the sheet positions. Use
+`flow: "n-up"` when you want ordinary sheet-by-sheet row-major filling.
 
 Use `stack-flow` for explicit finishing order. It takes the three axes
 `"deep"` (through the printed stack), `"right"` (across columns), and `"down"`
@@ -349,7 +352,7 @@ contains consecutive numbers.
 
 ### 6. Auto Item Orientation
 
-Use `item-orientation: "auto"` when the item may be rotated to fit more Nutzen
+Use `item-orientation: "auto"` when the item may be rotated to fit more items
 on a sheet.
 
 ```typst
@@ -433,12 +436,12 @@ Common props:
 
 - `paper`: named paper size or custom `(width, height)`.
 - `orientation`: `"portrait"` or `"landscape"` for the sheet.
-- `item-size`: finished trim size of one Nutzen.
+- `item-size`: finished trim size of one print item.
 - `item-orientation`: `"original"`, `"portrait"`, `"landscape"`, or `"auto"`.
 - `gap`: distance between trim boxes.
 - `cut-mode`: `"single"` or `"double"`.
 - `bleed`: artwork allowance outside the trim.
-- `safe`: inner guide for important content.
+- `safe`: safety-margin / safe-area guide for important content.
 - `marks`: boolean or dictionary with `crop`, `crop-mode`, `bleed`, `safe`,
   `registration`, `color-bar`, and `fold`.
 - `mark-style`: crop-mark drawing options such as `length`, `thickness`,
@@ -453,10 +456,10 @@ Crop-mark offset:
   stay readable on dark or busy artwork.
 - `marks.crop-mode: "auto"` uses shared `"grid"` marks for
   `cut-mode: "single"` with `gap: 0mm`; otherwise it uses `"per-item"` marks.
-- `marks.crop-mode: "per-item"` draws crop marks around every Nutzen. This is
-  the right shape for Doppelschnitt / double-cut layouts with a gap.
+- `marks.crop-mode: "per-item"` draws crop marks around every print item. This
+  is the right shape for double-cut layouts with a gutter or gap.
 - `marks.crop-mode: "grid"` draws one shared set of marks on the grid cut lines.
-  This is the right shape for Trennschnitt / single-cut layouts with no gap.
+  This is the right shape for shared-trim / single-cut layouts with no gap.
 - `offset` is the explicit distance from the trim edge to the inner end of the
   crop mark. Use it when your printer gives an exact mark offset.
 - If `offset: auto`, Sheetwise uses `bleed + bleed-offset` when `bleed` is
@@ -486,7 +489,7 @@ Workflow-specific props:
 - `gangup-pdf`: impose a finished one-page PDF without writing the `image(...)`
   wrapper yourself. Use `page`, `fit`, `back-source`, and `back-page` for PDF
   page selection and duplex backs.
-- `stack-flow`: explicit cut-stack axis order, for example
+- `stack-flow`: explicit cut-and-stack axis order, for example
   `("deep", "right", "down")`.
 - `blank-policy`, `binding`, `reading-direction`: booklet padding and spread
   direction.

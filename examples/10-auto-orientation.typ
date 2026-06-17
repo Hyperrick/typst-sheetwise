@@ -4,7 +4,7 @@
   #align(center + horizon)[
     #text(size: 16pt, weight: "bold")[AUTO]
     #v(2mm)
-    Sheetwise may rotate the item format to fit more Nutzen.
+    Sheetwise may rotate the item format to fit more pieces.
   ]
 ]
 
@@ -22,4 +22,3 @@
 )[
   #tag
 ]
-

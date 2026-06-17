@@ -4,23 +4,26 @@ This file records the print-production concepts that shaped Sheetwise.
 
 ## Terms
 
-- **Nutzen**: one finished item placed on a larger sheet.
-- **Druckbogen / press sheet**: the paper sheet that goes through the printer.
-- **Trennschnitt**: cutting a sheet at a defined position; required when a sheet
-  contains multiple Nutzen.
-- **Zwischenschnitt**: cutting out an extra material strip when Nutzen do not
-  touch directly. Sheetwise models this as `gap`.
-- **Randschnitt**: cutting strips from sheet edges to square or normalize a
-  stack.
-- **Beschnitt / bleed**: extra artwork beyond final trim.
-- **Sicherheitsabstand / safe area**: inner area where important content should
-  stay.
-- **Schnitt im Stapel / cut-stack**: records are placed so printed sheets can be
-  stacked, cut, and restacked without manual sorting.
-- **Rückstichheftung / saddle-stitch**: folded sheets nested and stapled on the
-  spine.
-- **Bundverdrängung / creep / shingling**: inner booklet pages protrude farther
-  after nesting and need progressive content shift toward the spine.
+- **Finished piece / print item**: one final trimmed item placed on a larger
+  press sheet.
+- **Press sheet**: the larger printed sheet that is later cut, folded, or bound.
+- **Trim size**: the final size after cutting.
+- **Trim line / cut line**: the line where the sheet is cut to the final size.
+- **Gutter / gap**: space or a removable strip between adjacent items. Sheetwise
+  models this as `gap`.
+- **Bleed**: extra artwork beyond the final trim.
+- **Safety margin / safe area**: inner area where important content should stay.
+- **Crop marks / trim marks**: printer marks showing where the final trim lands.
+- **Registration marks**: printer marks used to align color separations.
+- **Color bars**: printer marks used for color/control checking.
+- **Slug**: job or production information printed outside the trim area.
+- **Cut-and-stack**: records are placed so printed sheets can be stacked, cut,
+  and restacked without manual sorting.
+- **N-up**: multiple pages or items placed on one sheet.
+- **Gang-up**: grouping repeated or different print items onto a larger sheet.
+- **Saddle-stitch**: folded sheets nested and stitched on the spine.
+- **Creep / shingling**: inner booklet pages protrude farther after nesting and
+  need progressive content shift toward the spine.
 
 ## Feature Plan
 
@@ -31,14 +34,14 @@ Implemented in `0.1.0`:
 - Portrait/landscape sheet orientation.
 - Built-in common sheet sizes, including A-series, SRA3, Letter, Legal, and
   Tabloid.
-- Gap / Trennschnitt between Nutzen.
+- Gutter/gap between adjacent print items.
 - Repeating one design across a sheet.
-- Mixed sorts with copy counts.
-- Forward and reverse filling for mixed sorts.
-- Cut-stack sequencing and ordinary n-up sequencing.
-- Explicit `cut-mode: "single" | "double"` semantics. In German terms,
-  `Trennschnitt` can be a single separation cut; `Zwischenschnitt` /
-  `Doppelschnitt` removes a strip between full-bleed products.
+- Mixed versions with copy counts.
+- Forward and reverse filling for mixed versions.
+- Cut-and-stack sequencing and ordinary n-up sequencing.
+- Explicit `cut-mode: "single" | "double"` semantics. Single-cut layouts share a
+  trim line between adjacent items; double-cut layouts use a removable gutter
+  between items.
 - Crop marks, bleed proof box, trim proof box, safe-area proof box,
   registration marks, color bars, and fold marks.
 - Structured slug/job-info text on the sheet.
@@ -61,24 +64,23 @@ Planned after `0.1.0`:
 ## Researched API Requirements
 
 - `sheet-size` and `sheet-orientation` must be separate from `item-size` and
-  item rotation. This matches real Druckbogen planning: stock size is a press
+  item rotation. This matches real press-sheet planning: stock size is a press
   and finishing decision, not just the finished product format.
 - `rows`/`columns` should be explicit but can default to auto-fit. Printers
   sometimes request a fixed grid even when more items would fit.
 - `gap` should be measured between trim boxes. This makes it usable for both
-  `Trennschnitt` and `Zwischenschnitt` workflows.
+  shared-trim and removable-gutter workflows.
 - `cut-stack` needs a page-flow concept. Professional tools describe this with
   dimensions such as `deep`, `right`, and `down`: deep means the next record is
   placed on the next sheet in the stack.
-- Mixed sorts need copy counts per version. This supports workflows like
+- Mixed versions need copy counts per version. This supports workflows like
   several business-card names or sticker variants on one sheet.
 - Saddle-stitch inputs should remain in reader order. Imposition should happen
   as an export/second-pass step, pairing pages like `8 | 1`, `2 | 7`, `6 | 3`,
   `4 | 5` for an eight-page booklet.
 - Saddle-stitch page counts should be multiples of four or padded with blanks.
-- Creep / Bundverdrängung should stay explicit because printers calculate it
-  differently. A practical first model is progressive sheet shift from outside
-  to inside.
+- Creep should stay explicit because printers calculate it differently. A
+  practical first model is progressive sheet shift from outside to inside.
 - Duplex/back-side handling needs calibration output because printer drivers
   differ in long-edge/short-edge flip behavior.
 - PDF/X, output ICC profiles, automatic image-resolution checks, and PDF page
@@ -100,17 +102,25 @@ Planned after `0.1.0`:
 - [Imposition Wizard cut-stack](https://pressnostress.com/impositionwizard/tutorials/imposition/cut-stack/):
   cut-stack uses flow dimensions such as Deep, Down, and Right and includes
   grid, gap, duplex, bleed, and marks concepts.
-- [Mediencommunity / bvdm Schneiden PDF](https://mediencommunity.de/system/files/05.01%20Schneiden.pdf):
-  `Trennschnitt` is required when a Druckbogen contains multiple Nutzen;
-  `Zwischenschnitt` is an extra strip between product Nutzen.
-- [Primus-Print Bundverdrängung](https://www.primus-print.de/daten/bundverdraengung/):
-  saddle-stitched brochures create Bundverdrängung; the amount depends on page
-  count and paper grammage.
+- [University of Cincinnati printing glossary](https://www.uc.edu/about/printing-services/resources/glossary.html):
+  imposition is the positioning of pages so they appear in sequence after
+  printing, folding, and cutting.
+- [Fiery cut-and-stack imposition](https://help.fiery.com/jobmaster/4.8/en-us/GUID-3390F348-B04B-493F-BA02-658E55BE8CE8.html):
+  cut-and-stack keeps records sequential after stacking, cutting, and restacking.
+- [Fiery imposition templates](https://help.fiery.com/jobmaster/4.7/en-us/GUID-4EA54B5C-3E7F-4139-A267-71B4E52F99D4.html):
+  saddle-stitch layouts use duplex, bleeds, printer's marks, and blank-page
+  padding when needed.
+- [Prepressure imposition overview](https://www.prepressure.com/prepress/imposition):
+  imposition planning covers press-sheet layout, folding/binding order, and
+  creep/shingling compensation.
 - [SAIC Saddle Stitch Books](https://sites.saic.edu/servicebureau/home/services/saddle-stitch-books/):
   saddle-stitch page counts must be multiples of four; full-bleed booklets need
   bleed, crop marks, and imposition.
 - [Adobe InDesign printer marks, bleeds, and slug](https://helpx.adobe.com/indesign/desktop/print/page-set-up-and-printer-marks/set-printer-marks.html):
   printer marks, bleed, and slug are separate print setup concepts.
+- [Disc Makers bleed and safety margins](https://support.discmakers.com/hc/en-us/articles/360033809554-What-Are-Bleed-And-Safety-Margins):
+  safety margin is the inner area where important content stays away from crop
+  marks and trim variance.
 - [Adobe booklet imposition](https://helpx.adobe.com/indesign/desktop/print/print-booklets/impose-documents-for-booklet-printing.html):
   normal reader-order documents are imposed into printer spreads at output time.
 - [Sheetwise-relevant Typst package markly](https://typst.app/universe/package/markly/):

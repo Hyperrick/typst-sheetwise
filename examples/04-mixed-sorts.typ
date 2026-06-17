@@ -16,7 +16,7 @@
   safe: 4mm,
   marks: (crop: true, registration: true, color-bar: true),
   proof: true,
-  slug: (job: "mixed sorts", sheet: true, grid: true),
+  slug: (job: "mixed versions", sheet: true, grid: true),
   items: (
     (label: "A", copies: 3, body: red),
     (label: "B", copies: 2, body: blue),
