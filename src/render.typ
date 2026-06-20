@@ -566,7 +566,7 @@
   slug: none,
 ) = {
   if type(job) != dictionary or not _has-key(job, "kind") {
-    panic("sheetwise: `job` must be created with `repeat`, `variants`, `sequence`, `pdf`, `booklet`, or `marks-only`.")
+    panic("sheetwise: `job` must be created with `repeat`, `variants`, `sequence`, `pdf`, `booklet`, `marks-only`, or `calibration`.")
   }
 
   if job.kind == "booklet" {
