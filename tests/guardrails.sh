@@ -42,12 +42,15 @@ invalid-columns|`columns` must be at least 1.
 invalid-crop-mode|`marks.crop-mode` must be `auto`, `per-item`, or `grid`.
 invalid-cut-mode|`cut-mode` must be `single` or `double`.
 invalid-creep|`creep` must not be negative.
-invalid-duplex-back|`gangup` needs `back` when `duplex: true`.
+invalid-duplex-back|`repeat` needs `back` when `duplex: true`.
 invalid-flip|`flip` must be `long-edge`, `short-edge`, or `none`.
 invalid-flow|unknown `flow`.
-invalid-gangup-flip|`flip` must be `long-edge`, `short-edge`, or `none`.
+invalid-repeat-flip|`flip` must be `long-edge`, `short-edge`, or `none`.
+invalid-job-kind|unknown job kind
+invalid-job-type|`job` must be created with
 invalid-items|every `items` entry must include `body`.
 invalid-item-orientation|`item-orientation` must be `auto`, `original`, `portrait`, or `landscape`.
+invalid-margin|`margin.left` must not be negative.
 invalid-marks|`marks` must be a boolean, `none`, or a dictionary.
 invalid-mark-style|`mark-style` must be a dictionary.
 invalid-order|`order` must be `forward` or `reverse`.
@@ -56,6 +59,7 @@ invalid-pdf-back-page|`back-page` must be at least 1.
 invalid-pdf-back-source|`back-source` requires `duplex: true`.
 invalid-pdf-page|`page` must be at least 1.
 invalid-reading-direction|`reading-direction` must be `ltr` or `rtl`.
+invalid-region|`regions.0.width` must be greater than zero.
 invalid-rows|`rows` must be at least 1.
 invalid-safe|`safe` must be smaller than half the item size.
 invalid-stack-flow|`stack-flow` must contain `deep`, `right`, and `down` exactly once.

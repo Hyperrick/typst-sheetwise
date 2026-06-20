@@ -4,7 +4,5 @@
   repeat()[x],
   paper: "a6",
   trim-size: (35mm, 20mm),
-  rows: 1,
-  columns: 1,
-  mark-style: false,
+  margin: (left: -1mm, right: 5mm, top: 5mm, bottom: 5mm),
 )

@@ -1,3 +1,3 @@
-#import "../lib.typ": duplex-calibration
+#import "../lib.typ": calibration, impose
 
-#duplex-calibration(flip: "sideways")
+#impose(calibration(flip: "sideways"))

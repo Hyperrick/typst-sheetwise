@@ -8,5 +8,5 @@ description = "Arrange print items on press sheets."
 repository = "https://github.com/Hyperrick/typst-sheetwise"
 keywords = ["imposition", "print", "gang-up", "booklet", "prepress"]
 categories = ["layout", "utility"]
-compiler = "0.15.0"
-exclude = ["tests/**", "assets/*.webp", "examples/**/*.pdf", "docs/print-research.md"]
+compiler = "0.14.0"
+exclude = ["tests/**", "assets/*.webp", "examples/**/*.pdf"]

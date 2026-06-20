@@ -1,4 +1,4 @@
-#import "../lib.typ": gangup
+#import "../lib.typ": impose, repeat
 
 #let tag = rect(width: 100%, height: 100%, fill: rgb("#f2fff2"))[
   #align(center + horizon)[
@@ -8,9 +8,12 @@
   ]
 ]
 
-#gangup(
+#impose(
+  repeat()[
+    #tag
+  ],
   paper: "a4",
-  item-size: (95mm, 45mm),
+  trim-size: (95mm, 45mm),
   item-orientation: "auto",
   margin: 10mm,
   gap: 4mm,
@@ -19,6 +22,4 @@
   safe: 4mm,
   proof: true,
   slug: (job: "auto orientation", sheet: true, grid: true),
-)[
-  #tag
-]
+)

@@ -1,9 +1,9 @@
-#import "../lib.typ": gangup-pdf
+#import "../lib.typ": impose, pdf
 
-#gangup-pdf(
-  read("build/business-card-source.pdf", encoding: none),
+#impose(
+  pdf(read("build/business-card-source.pdf", encoding: none)),
   paper: "a4",
-  item-size: (85mm, 55mm),
+  trim-size: (85mm, 55mm),
   margin: 12mm,
   gap: 6mm,
   cut-mode: "double",

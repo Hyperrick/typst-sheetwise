@@ -1,12 +1,12 @@
-#import "../lib.typ": mixed-gangup
+#import "../lib.typ": impose, variants
 
-#mixed-gangup(
+#impose(
+  variants(
+    order: "sideways",
+    items: ((body: [x]),),
+  ),
   paper: "a6",
-  item-size: (35mm, 20mm),
+  trim-size: (35mm, 20mm),
   rows: 1,
   columns: 1,
-  order: "sideways",
-  items: (
-    (body: [x]),
-  ),
 )

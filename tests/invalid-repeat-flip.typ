@@ -1,10 +1,9 @@
 #import "../lib.typ": impose, repeat
 
 #impose(
-  repeat()[x],
+  repeat(duplex: true, back: [back], flip: "sideways")[front],
   paper: "a6",
   trim-size: (35mm, 20mm),
   rows: 1,
   columns: 1,
-  mark-style: false,
 )

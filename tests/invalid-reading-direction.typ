@@ -1,3 +1,3 @@
-#import "../lib.typ": saddle-stitch-plan
+#import "../lib.typ": booklet-plan
 
-#saddle-stitch-plan(8, reading-direction: "ttb")
+#booklet-plan(8, reading-direction: "ttb")

@@ -1,10 +1,8 @@
-#import "../lib.typ": duplex-calibration
+#import "../lib.typ": calibration, impose
 
-#duplex-calibration(
+#impose(
+  calibration(flip: "long-edge", back-rotation: 180deg),
   paper: "a4",
-  flip: "long-edge",
-  back-rotation: 180deg,
   marks: (registration: true, color-bar: true),
   slug: (job: "duplex calibration", sheet: true),
 )
-

@@ -2,44 +2,42 @@
 
 Arrange print items on press sheets in Typst.
 
-Sheetwise is for practical print-imposition workflows where you need to turn
-Typst content into print sheets: business cards, labels, stickers, coupons,
-tickets, postcards, flyer grids, mixed versions, duplex sheets,
-cut-and-stack jobs, and booklet proofs.
+Sheetwise is a Typst-native imposition helper for business cards, labels,
+stickers, coupons, tickets, flyer grids, mixed versions, duplex sheets,
+cut-and-stack jobs, independent cut-mark regions, and saddle-stitch booklet
+proofs.
 
-It focuses on practical print terms:
+## Two Input Workflows
 
-- **Finished piece / print item**: one final trimmed item.
-- **Press sheet**: the larger sheet that is printed and then cut or folded.
-- **Trim size**: the final size after cutting.
-- **Gutter / gap**: space or a removable strip between adjacent items.
-- **Bleed**: artwork area extending beyond the final trim.
-- **Safety margin / safe area**: inner guide for important content.
-- **Crop marks / trim marks**: printer marks showing where to cut.
-- **Cut-and-stack**: imposition order that stays sequential after printing,
-  stacking, cutting, and restacking the piles.
-- **Saddle-stitch**: booklet binding with folded sheets nested and stitched on
-  the spine.
-- **Creep / shingling**: progressive page offset used to compensate for nested
-  saddle-stitched sheets.
+Sheetwise supports two ways to work:
 
-## Use Cases
+| Workflow | Use it when | Job constructors |
+| --- | --- | --- |
+| Typst content | The design is authored in Typst and should be repeated or arranged on press sheets. | `repeat`, `variants`, `sequence` |
+| Finished PDF input | The design is already compiled and should be imposed without re-authoring it. | `pdf`, `booklet` |
 
-- Repeat one design across a sheet for business cards, stickers, labels,
-  coupons, postcards, or small product inserts.
-- Put multiple versions on one sheet, for example different names, variants,
-  colors, or languages.
-- Number tickets or personalized pieces so the stack stays in order after
-  printing, cutting, and restacking.
-- Create front/back sheets for duplex print tests and small two-sided jobs.
-- Impose reader-order PDF pages into saddle-stitch printer spreads for booklet
-  proofs.
-- Draw practical print guides: crop marks, bleed guides, safe-area guides,
-  registration marks, fold marks, color bars, and job slugs.
+Use `marks-only` when you only need crop/registration marks around explicit
+regions. Use `calibration` to print a front/back duplex alignment sheet.
+
+## Features
+
+- One canonical renderer: `impose(job, ...)`.
+- Job constructors for repeated content, mixed variants, numbered sequences,
+  finished PDF input, saddle-stitch booklets, mark-only sheets, and duplex
+  calibration.
+- Automatic or manual rows/columns for press-sheet grids.
+- Side-specific margins with `(left:, right:, top:, bottom:)`.
+- Single-cut and double-cut spacing with bleed validation.
+- Per-item crop marks, shared grid marks, and arbitrary explicit mark regions.
+- Registration marks default to 4C process black
+  `cmyk(100%, 100%, 100%, 100%)`; crop marks use K-only black by default.
+- Duplex front/back alignment with long-edge and short-edge flipping.
+- Saddle-stitch PDF imposition with blank-page padding, binding direction, fold
+  marks, and creep compensation.
 
 ## Preview
 
-Automatic gang-up with bleed, crop marks, safe guides, and a color bar:
+Automatic gang-up with print guides:
 
 ![Sheetwise automatic gang-up preview](assets/gangup-auto.svg)
 
@@ -47,159 +45,61 @@ Finished PDF input imposed on a sheet:
 
 ![Sheetwise finished PDF input preview](assets/pdf-input-gangup.svg)
 
-Multiple versions on one sheet:
+Multiple versions and cut-and-stack output:
 
 ![Sheetwise mixed versions preview](assets/mixed-sorts.svg)
 
-Cut-and-stack numbering for tickets. The example creates three output sheets;
-the numbers run through the printed stack so each cut pile stays sequential
-after cutting.
+![Sheetwise cut-and-stack tickets preview](assets/cut-stack-tickets.svg)
 
-**Cut-and-stack sheet 1/3**
+Saddle-stitch printer spreads:
 
-![Sheetwise cut-and-stack tickets sheet 1 preview](assets/cut-stack-tickets-sheet-1.svg)
+![Sheetwise saddle-stitch preview](assets/saddle-stitch.svg)
 
-**Cut-and-stack sheet 2/3**
+Independent mark regions and asymmetric margins:
 
-![Sheetwise cut-and-stack tickets sheet 2 preview](assets/cut-stack-tickets-sheet-2.svg)
+![Sheetwise multiple mark regions preview](assets/multiple-mark-regions.svg)
 
-**Cut-and-stack sheet 3/3**
+![Sheetwise asymmetric margins preview](assets/asymmetric-margins.svg)
 
-![Sheetwise cut-and-stack tickets sheet 3 preview](assets/cut-stack-tickets-sheet-3.svg)
+## Installation
 
-Duplex front/back sheet alignment:
-
-![Sheetwise duplex gang-up preview](assets/duplex-gangup.svg)
-
-Saddle-stitch PDF imposition. The example takes an 8-page reader-order PDF and
-turns it into two physical sheets with front/back printer spreads.
-
-**Saddle-stitch sheet 1 front: source pages 8 and 1**
-
-![Sheetwise saddle-stitch sheet 1 front preview](assets/saddle-stitch-sheet-1-front.svg)
-
-**Saddle-stitch sheet 1 back: source pages 2 and 7**
-
-![Sheetwise saddle-stitch sheet 1 back preview](assets/saddle-stitch-sheet-1-back.svg)
-
-**Saddle-stitch sheet 2 front: source pages 6 and 3**
-
-![Sheetwise saddle-stitch sheet 2 front preview](assets/saddle-stitch-sheet-2-front.svg)
-
-**Saddle-stitch sheet 2 back: source pages 4 and 5**
-
-![Sheetwise saddle-stitch sheet 2 back preview](assets/saddle-stitch-sheet-2-back.svg)
-
-White-backed crop marks on dark artwork:
-
-![Sheetwise crop mark knockout preview](assets/crop-mark-knockout.svg)
-
-Shared grid crop marks for zero-gap single cuts:
-
-![Sheetwise single-cut grid crop marks preview](assets/single-cut-grid-crop-marks.svg)
-
-## Features
-
-- Automatic grid planning for named paper sizes such as A4, A3, SRA3, Letter,
-  and custom sheet sizes.
-- Single-design gang-up, manual rows/columns, and mixed-version sheets.
-- PDF-input gang-up with `gangup-pdf` for layout proofs and non-color-critical
-  files.
-- Single-cut and double-cut spacing with bleed validation.
-- Per-item crop marks for double cuts and shared grid crop marks for zero-gap
-  single cuts.
-- Cut-and-stack numbering with explicit stack flow.
-- Duplex front/back generation with long-edge and short-edge flip handling.
-- Saddle-stitch PDF imposition with blank-page padding, right/left binding,
-  reading direction, fold marks, and creep compensation.
-- Print guides for crop, bleed, safe area, registration, color bar, fold marks,
-  and slugs.
-
-## Input Workflows
-
-Sheetwise can be used in two ways.
-
-### Direct Typst Content
-
-Use this when the print item is a small reusable Typst block inside the same
-document: business cards, labels, stickers, tickets, coupons, badges, or simple
-product inserts.
-
-See `examples/02-gangup-auto.typ` for a complete direct-content example.
+After publishing to Typst Universe:
 
 ```typst
-#import "@preview/sheetwise:0.1.0": gangup
+#import "@preview/sheetwise:0.1.0": impose, repeat
+```
 
-#let card = [
-  #rect(width: 100%, height: 100%, fill: rgb("#fff8eb"))[
-    #pad(7mm)[
-      #text(size: 15pt, weight: "bold")[John Doe]
-      #v(2mm)
-      john.doe\@example.com
-    ]
+For local development from this repository:
+
+```typst
+#import "lib.typ": impose, repeat
+```
+
+Compile all local examples and tests with:
+
+```sh
+sh tests/run.sh
+```
+
+## Quick Start: Typst Content
+
+Use this mode when your design is Typst content.
+
+```typst
+#import "@preview/sheetwise:0.1.0": impose, repeat
+
+#let card = rect(width: 100%, height: 100%, fill: rgb("#fff8eb"))[
+  #pad(6mm)[
+    #text(size: 15pt, weight: "bold")[John Doe]
+    #v(2mm)
+    Typst print imposition tools
   ]
 ]
 
-#gangup(
+#impose(
+  repeat()[#card],
   paper: "a4",
-  item-size: (85mm, 55mm),
-  bleed: 3mm,
-  marks: (crop: true, bleed: true),
-)[
-  #card
-]
-```
-
-### Finished PDF Input
-
-Use this when the design is already a complete PDF or comes from another Typst
-template with its own page setup, margins, fonts, and show rules. Compile the
-design first, then impose the finished PDF.
-
-```sh
-typst compile card.typ card.pdf
-```
-
-```typst
-#import "@preview/sheetwise:0.1.0": gangup-pdf
-
-#gangup-pdf(
-  read("card.pdf", encoding: none),
-  paper: "a4",
-  item-size: (85mm, 55mm),
-  bleed: 3mm,
-  marks: (crop: true, bleed: true),
-)
-```
-
-Use `read(..., encoding: none)` for local PDFs so the file path is resolved in
-your document before Sheetwise places the PDF page.
-
-Note: Typst can place PDF pages, but it is not a PDF/X-preserving prepress
-engine. For press-ready external PDFs where spot colors, output intents, 1c
-black, or exact CMYK values must survive, use a dedicated PDF-level imposition
-tool.
-
-If you need lower-level control, you can still use `gangup` directly and place
-the PDF yourself with `image("card.pdf", page: 1, width: 100%, height: 100%)`.
-
-See `examples/13-pdf-input-gangup.typ` for a complete PDF-input example. It
-expects a finished source PDF first:
-
-```sh
-mkdir -p build
-typst compile --root . examples/01-single-design.typ build/business-card-source.pdf
-typst compile --root . examples/13-pdf-input-gangup.typ build/13-pdf-input-gangup.pdf
-```
-
-## Quick Start
-
-```typst
-#import "@preview/sheetwise:0.1.0": gangup
-
-#gangup(
-  paper: "a4",
-  item-size: (85mm, 55mm),
+  trim-size: (85mm, 55mm),
   margin: 12mm,
   gap: 6mm,
   cut-mode: "double",
@@ -207,311 +107,366 @@ typst compile --root . examples/13-pdf-input-gangup.typ build/13-pdf-input-gangu
   safe: 4mm,
   marks: (crop: true, bleed: true, safe: true, color-bar: true),
   slug: (job: "business cards", sheet: true, grid: true),
-)[
-  #rect(width: 100%, height: 100%, fill: rgb("#fff8eb"))[
-    #pad(6mm)[
-      #text(size: 15pt, weight: "bold")[John Doe]
-      #v(2mm)
-      Typst print imposition tools
-    ]
-  ]
-]
-```
-
-Compile it:
-
-```sh
-typst compile --root . examples/02-gangup-auto.typ build/gangup-auto.pdf
-```
-
-## Workflows
-
-### 1. One Design, Repeated Automatically
-
-Use `gangup` when the same item should be repeated across a sheet.
-
-```typst
-#gangup(
-  paper: "a4",
-  item-size: (85mm, 55mm),
-  gap: 6mm,
-  cut-mode: "double",
-  bleed: 3mm,
-  marks: (crop: true, bleed: true, color-bar: true),
-)[
-  #my-card()
-]
-```
-
-Rows and columns default to `auto`, so Sheetwise fits the maximum possible
-number of items inside the selected sheet and margin.
-
-Use `cut-mode: "single"` for a shared trim line between adjacent items. Use
-`cut-mode: "double"` for a removable gutter between items; when `bleed` is set,
-Sheetwise requires `gap >= 2 * bleed`.
-
-For zero-gap shared-trim layouts, use shared grid crop marks. The default
-`crop-mode: "auto"` selects this automatically when `cut-mode: "single"` and
-`gap: 0mm`, but you can set it explicitly:
-
-```typst
-#gangup(
-  paper: "a4",
-  item-size: (85mm, 55mm),
-  rows: 4,
-  columns: 2,
-  gap: 0mm,
-  cut-mode: "single",
-  marks: (crop: true, crop-mode: "grid"),
-)[
-  #my-card()
-]
-```
-
-Use `crop-mode: "per-item"` for ordinary double-cut layouts with a gap, where
-each print item keeps its own crop marks around its own trim box.
-
-### 2. Manual Rows And Columns
-
-Use `rows` and `columns` when the printer or finishing workflow requires a
-specific grid.
-
-```typst
-#gangup(
-  paper: "sra3",
-  orientation: "landscape",
-  item-size: (85mm, 55mm),
-  item-orientation: "landscape",
-  rows: 4,
-  columns: 4,
-  gap: (6mm, 5mm),
-)[
-  #my-card()
-]
-```
-
-### 3. Multiple Versions On One Sheet
-
-Use `mixed-gangup` for multiple design versions on the same sheet.
-
-```typst
-#mixed-gangup(
-  paper: "a4",
-  item-size: (85mm, 55mm),
-  rows: 4,
-  columns: 2,
-  items: (
-    (label: "A", copies: 3, body: card-a),
-    (label: "B", copies: 2, body: card-b),
-    (label: "C", copies: 3, body: card-c),
-  ),
 )
 ```
 
-### 4. Duplex Front And Back
+## Quick Start: Finished PDF
 
-Use `duplex: true` with `back` content to generate a second imposed side. The
-`flip` parameter controls how slots are mirrored for long-edge or short-edge
-duplex printing.
+Use this mode when the design is already compiled. Prefer passing PDF bytes with
+`read(..., encoding: none)` so the source path is resolved by your document.
 
 ```typst
-#gangup(
+#import "@preview/sheetwise:0.1.0": impose, pdf
+
+#impose(
+  pdf(read("card.pdf", encoding: none)),
   paper: "a4",
-  item-size: (85mm, 55mm),
-  rows: 4,
-  columns: 2,
-  duplex: true,
-  back: card-back,
-  flip: "long-edge",
-  back-rotation: 180deg,
-)[
-  #card-front
-]
+  trim-size: (85mm, 55mm),
+  cut-mode: "double",
+  gap: 6mm,
+  bleed: 3mm,
+  marks: (crop: true, registration: true),
+)
 ```
 
-Print `duplex-calibration()` first if you are unsure how your printer flips the
-back side.
+## Core Concepts
+
+| Term | What it means | How to set it |
+| --- | --- | --- |
+| Paper | The full press sheet or printer sheet. | `paper: "a4"` or `paper: (320mm, 450mm)` |
+| Trim size | The final cut size of one item. | `trim-size: (85mm, 55mm)` |
+| Margin | Empty space around the grid. | `margin: 12mm` or side margins |
+| Gap | Space between items. | `gap: 4mm` or `(width: 6mm, height: 3mm)` |
+| Bleed | Artwork allowance outside the trim. | `bleed: 3mm` |
+| Safe area | Inset guide for text/logos away from trim. | `safe: 4mm` |
+| Cut mode | Whether neighboring items share one cut or use a removable gutter. | `cut-mode: "single"` or `"double"` |
+| Marks | Crop, bleed, safe, registration, color, and fold guides. | `marks: true` or a dictionary |
+| Proof | Adds visible proof outlines and labels. | `proof: true` |
+| Slug | Small metadata text on the sheet edge. | `slug: "Job 42"` or a dictionary |
+
+## The `impose` Renderer
+
+Every output goes through `impose(job, ...)`. The job defines what content is
+placed. Renderer options define the sheet, grid, marks, and proof overlays.
 
 ```typst
-#duplex-calibration(paper: "a4", flip: "long-edge")
+#impose(
+  repeat()[#card],
+  paper: "a4",
+  orientation: "portrait",
+  trim-size: (85mm, 55mm),
+  margin: 10mm,
+  gap: 3mm,
+  rows: auto,
+  columns: auto,
+  cut-mode: "single",
+  bleed: 0pt,
+  safe: 0pt,
+  marks: true,
+)
 ```
 
-### 5. Cut-And-Stack Tickets
+### Sheet And Grid Options
 
-Use `cut-stack` for numbered or personalized items that should remain in order
-after the printed stack is cut into piles.
+| Option | Default | Meaning |
+| --- | --- | --- |
+| `paper` | `"a4"` | Named paper size or custom `(width, height)` / `(width:, height:)`. Built-ins: `a6`, `a5`, `a4`, `a3`, `sra3`, `letter`, `legal`, `tabloid`. |
+| `orientation` | `"portrait"` | `"portrait"` keeps the paper size as defined; `"landscape"` swaps width and height. |
+| `trim-size` | `auto` | Required finished item size unless `item-size` is supplied. |
+| `item-size` | `auto` | Alias for `trim-size`; if both are set, they must match. |
+| `item-orientation` | `"original"` | `"original"`, `"portrait"`, `"landscape"`, or `"auto"`. `"auto"` chooses the orientation that fits the most slots. |
+| `margin` | `10mm` | Length, `(x, y)`, `(width:, height:)`, or `(left:, right:, top:, bottom:)`. |
+| `gap` | `3mm` | Length or pair. Controls horizontal and vertical space between trim boxes. |
+| `rows` | `auto` | Manual row count. Must be at least `1` when set. |
+| `columns` | `auto` | Manual column count. Must be at least `1` when set. |
+
+Side-specific margins solve asymmetric printer or finishing needs:
 
 ```typst
-#cut-stack(
+margin: (left: 18mm, right: 8mm, top: 12mm, bottom: 28mm)
+```
+
+### Cut, Bleed, And Safe Options
+
+| Option | Default | Meaning |
+| --- | --- | --- |
+| `cut-mode` | `"single"` | `"single"` means adjacent items can share cut lines. `"double"` means a removable strip separates items. |
+| `bleed` | `0pt` | Must not be negative. For double-cut jobs, each gap must be at least `2 * bleed`. |
+| `safe` | `0pt` | Must be smaller than half of the item width and height. |
+
+Use `"single"` for zero-gap shared cutting. Use `"double"` when each item has
+its own bleed and the gutter will be removed.
+
+### Marks And Proof Options
+
+`marks` can be `true`, `false`, `none`, or a dictionary.
+
+```typst
+marks: (
+  crop: true,
+  crop-mode: "auto",
+  bleed: true,
+  safe: true,
+  registration: true,
+  color-bar: true,
+  fold: false,
+)
+```
+
+| Mark option | Default with `marks: true` | Meaning |
+| --- | --- | --- |
+| `crop` | `true` | Draw crop marks around trim regions. |
+| `crop-mode` | `"auto"` | `"per-item"` draws each item separately. `"grid"` draws shared grid cut lines. `"auto"` picks grid marks for tight shared cuts and per-item marks otherwise. |
+| `bleed` | `false` | Draw bleed outlines when `bleed > 0pt`. |
+| `safe` | `false` | Draw safe-area outlines when `safe > 0pt`. |
+| `registration` | `false` | Draw four registration marks on the sheet. |
+| `color-bar` | `false` | Draw CMYK and gray color patches. |
+| `fold` | `false` | Draw fold marks, mainly useful for booklets. |
+
+`proof: true` adds colored trim/bleed/safe outlines and labels for checking
+placement. It is useful for development proofs, not final print output.
+
+### Mark Style
+
+Use `mark-style` to tune crop and registration mark appearance.
+
+```typst
+mark-style: (
+  color: cmyk(0%, 0%, 0%, 100%),
+  registration-color: cmyk(100%, 100%, 100%, 100%),
+  length: 5mm,
+  offset: auto,
+  bleed-offset: 0pt,
+  no-bleed-offset: 2mm,
+  thickness: 0.25pt,
+  knockout: true,
+  knockout-color: cmyk(0%, 0%, 0%, 0%),
+  knockout-padding: 0.7pt,
+)
+```
+
+Registration and fold marks use `registration-color`, which defaults to 4C
+process black. Crop marks use `color`, which defaults to K-only black.
+
+### Slug Metadata
+
+`slug` prints small metadata near the sheet edge.
+
+```typst
+slug: (job: "cards", sheet: true, grid: true, bleed: true, cut-mode: true)
+```
+
+Set `slug: none` or `slug: false` to disable it. Use a string for fixed text or
+a dictionary with `job`, `date`, `sheet`, `grid`, `bleed`, `cut-mode`, or
+`text`.
+
+## Job Constructors
+
+### `repeat(...)[body]`
+
+Repeat one Typst design across the grid.
+
+```typst
+#impose(
+  repeat(copies: auto)[#card],
   paper: "a4",
-  item-size: (70mm, 35mm),
+  trim-size: (85mm, 55mm),
+)
+```
+
+Options:
+
+| Option | Default | Meaning |
+| --- | --- | --- |
+| `copies` | `auto` | Number of occupied slots. `auto` fills the grid. |
+| `duplex` | `false` | Emit a back side after the front. |
+| `back` | `none` | Back-side Typst content. Required when `duplex: true`. |
+| `back-rotation` | `180deg` | Rotates back content before placement. |
+| `flip` | `"long-edge"` | Back-side slot mapping: `"long-edge"`, `"short-edge"`, or `"none"`. |
+
+### `variants(items: ...)`
+
+Arrange several Typst designs with per-variant copy counts.
+
+```typst
+#impose(
+  variants(
+    items: (
+      (label: "A", copies: 3, body: card-a),
+      (label: "B", copies: 2, body: card-b),
+      (label: "C", copies: 3, body: card-c),
+    ),
+  ),
+  paper: "a4",
+  trim-size: (85mm, 55mm),
+)
+```
+
+Each item needs `body`. It may also include `label`, `copies`, and `back` for
+duplex variant jobs. `order: "reverse"` fills records in reverse order.
+
+### `sequence(count:, item:, ...)`
+
+Generate numbered or variable items. This is useful for tickets, coupons, and
+cut-and-stack work.
+
+```typst
+#let ticket(n) = align(center + horizon)[Ticket #n]
+
+#impose(
+  sequence(
+    count: 36,
+    stack-flow: ("deep", "right", "down"),
+    item: n => ticket(n),
+  ),
+  paper: "a4",
+  trim-size: (70mm, 35mm),
   rows: 6,
   columns: 2,
-  count: 36,
-  stack-flow: ("deep", "right", "down"),
-  item: n => ticket(n),
 )
 ```
 
-The default `flow: "cut-stack"` implements cut-and-stack imposition: records are
-placed down the stack first, then through the sheet positions. Use
-`flow: "n-up"` when you want ordinary sheet-by-sheet row-major filling.
+Options:
 
-Use `stack-flow` for explicit finishing order. It takes the three axes
-`"deep"` (through the printed stack), `"right"` (across columns), and `"down"`
-(down rows). For example, `("deep", "right", "down")` means the first cut pile
-contains consecutive numbers.
+| Option | Default | Meaning |
+| --- | --- | --- |
+| `count` | required | Total generated records. |
+| `item` | required | Function called as `item(n)` for 1-based record numbers. |
+| `flow` | `"cut-stack"` | Preset ordering. Supported: `"cut-stack"`, `"n-up"`, `"down-right-deep"`, `"deep-down-right"`, plus the explicit names `"deep-right-down"` and `"right-down-deep"`. |
+| `stack-flow` | `auto` | Custom ordering tuple containing `deep`, `right`, and `down` exactly once. |
+| `stack-size` | `auto` | Force the number of sheets in the stack. Must fit `count`. |
+| `order` | `"forward"` | `"forward"` or `"reverse"`. |
 
-Use `stack-size` only when you need to force a specific number of sheets in the
-stack. It must be large enough to hold `count` with the selected grid.
+### `pdf(source:, ...)`
 
-### 6. Auto Item Orientation
-
-Use `item-orientation: "auto"` when the item may be rotated to fit more items
-on a sheet.
+Impose one page from a finished PDF. Use this when artwork already exists as a
+PDF.
 
 ```typst
-#gangup(
+#impose(
+  pdf(
+    read("front.pdf", encoding: none),
+    page: 1,
+    copies: auto,
+  ),
   paper: "a4",
-  item-size: (95mm, 45mm),
-  item-orientation: "auto",
-  margin: 10mm,
-  gap: 4mm,
-)[
-  #wide-label
-]
+  trim-size: (85mm, 55mm),
+)
 ```
 
-### 7. Saddle-Stitch PDF Imposition
+Options:
 
-First create a normal reader-order PDF:
+| Option | Default | Meaning |
+| --- | --- | --- |
+| `source` | required | PDF bytes or a source accepted by Typst `image`. |
+| `page` | `1` | Source PDF page to place. |
+| `fit` | `"stretch"` | Passed to Typst `image`. |
+| `alt` | `none` | Alternative text for the placed image. |
+| `copies` | `auto` | Number of occupied slots. |
+| `duplex` | `false` | Emit a back side. |
+| `back-source` | `none` | Back-side PDF source. Required when `duplex: true`. |
+| `back-page` | `1` | Back-side page number. |
+| `back-fit` | `auto` | Uses `fit` when left as `auto`. |
+| `back-alt` | `none` | Alternative text for the back-side image. |
+| `back-rotation` | `180deg` | Rotates back PDF content before placement. |
+| `flip` | `"long-edge"` | Back-side slot mapping. |
 
-```sh
-typst compile --root . examples/06-booklet-source.typ examples/build/booklet-source.pdf
-```
+### `booklet(source:, page-count:, ...)`
 
-Then impose it:
+Create saddle-stitch printer spreads from a finished PDF. Sheetwise outputs
+front and back sides for each booklet sheet.
 
 ```typst
-#import "@preview/sheetwise:0.1.0": saddle-stitch-pdf
-
-#saddle-stitch-pdf(
-  "examples/build/booklet-source.pdf",
-  page-count: 8,
+#impose(
+  booklet(
+    read("booklet-source.pdf", encoding: none),
+    page-count: 8,
+    creep: (paper-thickness: 0.12mm),
+  ),
   paper: "sra3",
   orientation: "landscape",
   trim-size: (148mm, 210mm),
-  bleed: 3mm,
-  creep: (paper-thickness: 0.12mm),
-  blank-policy: "end",
-  binding: "left",
-  reading-direction: "ltr",
   marks: (crop: true, registration: true, color-bar: true, fold: true),
+)
+```
+
+Options:
+
+| Option | Default | Meaning |
+| --- | --- | --- |
+| `source` | required | Finished source PDF bytes. |
+| `page-count` | required | Number of source pages before optional blank padding. |
+| `fit` | `"stretch"` | Passed to Typst `image`. |
+| `alt` | `none` | Alternative text for placed pages. |
+| `creep` | `0pt` | Saddle-stitch creep compensation. Use a direct amount or `(paper-thickness: 0.12mm)`. |
+| `blank-policy` | `"error"` | `"error"` rejects page counts not divisible by 4. `"end"` pads blanks at the end. |
+| `binding` | `"left"` | `"left"` or `"right"`. |
+| `reading-direction` | `"ltr"` | `"ltr"` or `"rtl"`. RTL mirrors page pairs. |
+| `order` | `"forward"` | `"forward"` or `"reverse"` output sheet order. |
+
+Creep is the English term for German `Bundverdrangung`: inner sheets shift when
+nested and folded for saddle stitching. `creep: (paper-thickness: 0.12mm)`
+computes the maximum shift from paper thickness and sheet count, then applies a
+progressive horizontal correction across sheets.
+
+Use the helpers below to inspect spread order:
+
+```typst
+#booklet-plan(8)
+#booklet-report(12, blank-policy: "end")
+```
+
+### `marks-only(regions:)`
+
+Draw marks around explicit regions without placing content. This covers
+multi-region cut-mark workflows.
+
+```typst
+#impose(
+  marks-only(
+    regions: (
+      (x: 18mm, y: 20mm, width: 50mm, height: 30mm, label: "A"),
+      (x: 82mm, y: 20mm, width: 50mm, height: 30mm, label: "B"),
+    ),
+  ),
+  paper: "a4",
+  bleed: 2mm,
+  marks: (crop: true, registration: true),
   proof: true,
 )
 ```
 
-Compile the imposed PDF:
+Regions can be dictionaries `(x:, y:, width:, height:)` or arrays
+`(x, y, width, height)`. Coordinates start at the top-left sheet corner.
 
-```sh
-typst compile --root . examples/07-saddle-stitch-pdf.typ build/saddle-stitch.pdf
-```
+### `calibration(...)`
 
-To inspect the printer spread order without rendering the PDF pages:
-
-```typst
-#saddle-stitch-report(12, blank-policy: "end")
-```
-
-## Examples
-
-```sh
-sh tests/run.sh
-```
-
-## API Notes
-
-Common props:
-
-- `paper`: named paper size or custom `(width, height)`.
-- `orientation`: `"portrait"` or `"landscape"` for the sheet.
-- `item-size`: finished trim size of one print item.
-- `item-orientation`: `"original"`, `"portrait"`, `"landscape"`, or `"auto"`.
-- `gap`: distance between trim boxes.
-- `cut-mode`: `"single"` or `"double"`.
-- `bleed`: artwork allowance outside the trim.
-- `safe`: safety-margin / safe-area guide for important content. It must be
-  smaller than half the item size.
-- `marks`: boolean or dictionary with `crop`, `crop-mode`, `bleed`, `safe`,
-  `registration`, `color-bar`, and `fold`.
-- `mark-style`: crop-mark drawing options such as `length`, `thickness`,
-  `color`, `offset`, `bleed-offset`, `no-bleed-offset`, `knockout`,
-  `knockout-color`, and `knockout-padding`.
-- `slug`: string or dictionary with fields such as `job`, `sheet`, `grid`,
-  `bleed`, and `cut-mode`.
-
-Crop-mark offset:
-
-- Crop marks are drawn as a black mark over a white knockout rectangle so they
-  stay readable on dark or busy artwork.
-- `marks.crop-mode: "auto"` uses shared `"grid"` marks for
-  `cut-mode: "single"` with `gap: 0mm`. It also uses `"grid"` for tight
-  double-cut layouts where the gap is only the two bleed allowances. Other
-  double-cut layouts use `"per-item"` marks.
-- `marks.crop-mode: "per-item"` draws crop marks around every print item. This
-  is the right shape for double-cut layouts with a gutter or gap.
-- `marks.crop-mode: "grid"` draws one shared set of marks on the grid cut lines.
-  This is the right shape for shared-trim / single-cut layouts with no gap.
-- `offset` is the explicit distance from the trim edge to the inner end of the
-  crop mark. Use it when your printer gives an exact mark offset.
-- If `offset: auto`, Sheetwise uses `bleed + bleed-offset` when `bleed` is
-  present. This places marks at or outside the bleed box.
-- If `offset: auto` and `bleed: 0pt`, Sheetwise uses `no-bleed-offset`.
+Print a two-page duplex calibration sheet to verify flip direction and back-side
+rotation before running real jobs.
 
 ```typst
-#gangup(
+#impose(
+  calibration(flip: "long-edge", back-rotation: 180deg),
   paper: "a4",
-  item-size: (85mm, 55mm),
-  bleed: 3mm,
-  marks: (crop: true),
-  mark-style: (
-    offset: auto,
-    bleed-offset: 1mm,
-    no-bleed-offset: 2mm,
-    knockout: true,
-  ),
-)[
-  #my-card()
-]
+  marks: (registration: true),
+)
 ```
 
-Workflow-specific props:
+## Planning Helpers
 
-- `duplex`, `back`, `flip`, `back-rotation`: generate and align a second side.
-  `back` / `back-source` require `duplex: true`; `duplex: true` requires a
-  matching back side.
-- `copies`: number of occupied slots on one `gangup` sheet. It cannot exceed
-  the selected grid slots.
-- `gangup-pdf`: impose a finished one-page PDF without writing the `image(...)`
-  wrapper yourself. Use `read("file.pdf", encoding: none)` for local PDFs. Use
-  `page`, `fit`, `back-source`, and `back-page` for PDF page selection and
-  duplex backs. `page` and `back-page` are 1-based.
-- `stack-flow`: explicit cut-and-stack axis order, for example
-  `("deep", "right", "down")`.
-- `blank-policy`, `binding`, `reading-direction`: booklet padding and spread
-  direction.
-- `trim-size`: finished page size for `saddle-stitch-pdf`.
-- `creep`: booklet creep compensation as a length or dictionary such as
-  `(paper-thickness: 0.12mm)`. It must not be negative.
-- `saddle-stitch-pdf` also accepts `fit` and `alt` for placed PDF pages.
+Sheetwise exports small helpers for checking imposition math:
+
+| Helper | Use |
+| --- | --- |
+| `paper-size("a4", orientation: "landscape")` | Resolve paper dimensions. |
+| `grid-plan(...)` | Inspect rows, columns, slot count, margins, and grid origin before rendering. |
+| `booklet-plan(page-count, ...)` | Return saddle-stitch page pairs. |
+| `booklet-report(page-count, ...)` | Typeset a human-readable booklet spread report. |
+| `registration-color` | Exported 4C registration mark color. |
 
 ## Current Limits
 
 Sheetwise is a Typst package, not a PDF preflight engine. It can arrange pages
-and draw guides, but it cannot guarantee PDF/X conformance, convert color
-profiles, inspect image resolution, or rewrite PDF page boxes. Those features
-need compiler support or external prepress tooling.
-
-PDF imposition uses Typst's built-in ability to place PDF pages as images. You
-must provide `page-count` because Typst package code cannot currently inspect
-the number of pages in an external PDF.
+and draw print guides, but it cannot guarantee PDF/X conformance, convert color
+profiles, inspect image resolution, or rewrite PDF page boxes. Use dedicated
+prepress tooling when those constraints matter.

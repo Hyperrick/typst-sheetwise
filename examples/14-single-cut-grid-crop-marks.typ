@@ -1,9 +1,12 @@
-#import "../lib.typ": gangup
+#import "../lib.typ": impose, repeat
 #import "_design.typ": brand-card
 
-#gangup(
+#impose(
+  repeat()[
+    #brand-card(accent: rgb("#2f8f46"))
+  ],
   paper: "a4",
-  item-size: (85mm, 55mm),
+  trim-size: (85mm, 55mm),
   rows: 4,
   columns: 2,
   margin: 12mm,
@@ -25,6 +28,4 @@
     grid: true,
     cut-mode: true,
   ),
-)[
-  #brand-card(accent: rgb("#2f8f46"))
-]
+)

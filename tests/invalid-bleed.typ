@@ -1,8 +1,7 @@
-#import "../lib.typ": saddle-stitch-pdf
+#import "../lib.typ": booklet, impose
 
-#saddle-stitch-pdf(
-  "missing.pdf",
-  page-count: 4,
+#impose(
+  booklet("missing.pdf", page-count: 4),
   trim-size: (50mm, 90mm),
   bleed: -1mm,
 )

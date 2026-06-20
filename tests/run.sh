@@ -35,11 +35,14 @@ for name in \
   11-saddle-report \
   12-crop-mark-knockout \
   13-pdf-input-gangup \
-  14-single-cut-grid-crop-marks
+  14-single-cut-grid-crop-marks \
+  15-multiple-mark-regions \
+  16-asymmetric-margins
 do
   compile_root "examples/${name}.typ" "build/${name}.pdf"
 done
 
 compile_root tests/smoke.typ build/smoke.pdf
+compile_root tests/readme-smoke.typ build/readme-smoke.pdf
 
 sh tests/guardrails.sh

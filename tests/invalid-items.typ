@@ -1,11 +1,9 @@
-#import "../lib.typ": mixed-gangup
+#import "../lib.typ": impose, variants
 
-#mixed-gangup(
+#impose(
+  variants(items: ((label: "missing body"),)),
   paper: "a6",
-  item-size: (35mm, 20mm),
+  trim-size: (35mm, 20mm),
   rows: 1,
   columns: 1,
-  items: (
-    (label: "missing body"),
-  ),
 )

@@ -1,10 +1,9 @@
-#import "../lib.typ": gangup
+#import "../lib.typ": impose, repeat
 
-#gangup(
+#impose(
+  repeat()[x],
   paper: "a6",
-  item-size: (35mm, 20mm),
+  trim-size: (35mm, 20mm),
   rows: 0,
   columns: 1,
-)[
-  x
-]
+)

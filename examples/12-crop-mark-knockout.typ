@@ -1,10 +1,19 @@
-#import "../lib.typ": gangup
+#import "../lib.typ": impose, repeat
 
 #set page(fill: rgb("#151515"))
 
-#gangup(
+#impose(
+  repeat()[
+    #rect(width: 100%, height: 100%, fill: rgb("#222222"))[
+      #pad(7mm)[
+        #text(size: 15pt, weight: "bold", fill: white)[John Doe]
+        #v(2mm)
+        #text(size: 8pt, fill: rgb("#dddddd"))[Crop marks stay visible on dark artwork.]
+      ]
+    ]
+  ],
   paper: "a4",
-  item-size: (85mm, 55mm),
+  trim-size: (85mm, 55mm),
   rows: 2,
   columns: 2,
   margin: 12mm,
@@ -19,12 +28,4 @@
     knockout-padding: 1.1pt,
   ),
   slug: (job: "crop mark knockout", sheet: true),
-)[
-  #rect(width: 100%, height: 100%, fill: rgb("#222222"))[
-    #pad(7mm)[
-      #text(size: 15pt, weight: "bold", fill: white)[John Doe]
-      #v(2mm)
-      #text(size: 8pt, fill: rgb("#dddddd"))[Crop marks stay visible on dark artwork.]
-    ]
-  ]
-]
+)

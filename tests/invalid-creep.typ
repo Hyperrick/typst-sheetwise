@@ -1,8 +1,6 @@
-#import "../lib.typ": saddle-stitch-pdf
+#import "../lib.typ": booklet, impose
 
-#saddle-stitch-pdf(
-  "booklet.pdf",
-  page-count: 8,
+#impose(
+  booklet("booklet.pdf", page-count: 8, creep: -1mm),
   trim-size: (35mm, 20mm),
-  creep: -1mm,
 )

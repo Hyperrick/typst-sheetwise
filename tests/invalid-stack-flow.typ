@@ -1,11 +1,13 @@
-#import "../lib.typ": cut-stack
+#import "../lib.typ": impose, sequence
 
-#cut-stack(
+#impose(
+  sequence(
+    count: 1,
+    stack-flow: ("deep", "deep", "right"),
+    item: n => [#n],
+  ),
   paper: "a6",
-  item-size: (35mm, 20mm),
+  trim-size: (35mm, 20mm),
   rows: 1,
   columns: 1,
-  count: 1,
-  stack-flow: ("deep", "deep", "right"),
-  item: n => [#n],
 )

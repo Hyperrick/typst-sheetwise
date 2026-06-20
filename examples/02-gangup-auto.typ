@@ -1,9 +1,12 @@
-#import "../lib.typ": gangup
+#import "../lib.typ": impose, repeat
 #import "_design.typ": brand-card
 
-#gangup(
+#impose(
+  repeat()[
+    #brand-card()
+  ],
   paper: "a4",
-  item-size: (85mm, 55mm),
+  trim-size: (85mm, 55mm),
   margin: 12mm,
   gap: 6mm,
   cut-mode: "double",
@@ -18,6 +21,4 @@
     bleed: true,
     cut-mode: true,
   ),
-)[
-  #brand-card()
-]
+)

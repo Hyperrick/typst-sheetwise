@@ -1,10 +1,9 @@
-#import "../lib.typ": gangup-pdf
+#import "../lib.typ": impose, pdf
 
-#gangup-pdf(
-  "front.pdf",
-  back-source: "back.pdf",
+#impose(
+  pdf("front.pdf", back-source: "back.pdf"),
   paper: "a6",
-  item-size: (35mm, 20mm),
+  trim-size: (35mm, 20mm),
   rows: 1,
   columns: 1,
 )
