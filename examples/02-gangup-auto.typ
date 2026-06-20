@@ -1,4 +1,4 @@
-#import "../lib.typ": impose, repeat
+#import "@preview/sheetwise:0.1.0": impose, repeat
 #import "_design.typ": brand-card
 
 #impose(

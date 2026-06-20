@@ -1,4 +1,4 @@
-#import "../lib.typ": impose, sequence
+#import "@preview/sheetwise:0.1.0": impose, sequence
 #import "_design.typ": ticket
 
 #impose(

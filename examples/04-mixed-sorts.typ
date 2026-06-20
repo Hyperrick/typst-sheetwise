@@ -1,4 +1,4 @@
-#import "../lib.typ": impose, variants
+#import "@preview/sheetwise:0.1.0": impose, variants
 #import "_design.typ": brand-card
 
 #let red = brand-card(name: "Sort A", accent: rgb("#e5482d"))

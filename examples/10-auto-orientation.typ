@@ -1,4 +1,4 @@
-#import "../lib.typ": impose, repeat
+#import "@preview/sheetwise:0.1.0": impose, repeat
 
 #let tag = rect(width: 100%, height: 100%, fill: rgb("#f2fff2"))[
   #align(center + horizon)[

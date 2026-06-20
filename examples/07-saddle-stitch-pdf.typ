@@ -1,4 +1,4 @@
-#import "../lib.typ": impose, booklet
+#import "@preview/sheetwise:0.1.0": impose, booklet
 
 #impose(
   booklet(

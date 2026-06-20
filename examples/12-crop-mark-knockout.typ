@@ -1,4 +1,4 @@
-#import "../lib.typ": impose, repeat
+#import "@preview/sheetwise:0.1.0": impose, repeat
 
 #set page(fill: rgb("#151515"))
 

@@ -69,10 +69,11 @@ After publishing to Typst Universe:
 #import "@preview/sheetwise:0.1.0": impose, repeat
 ```
 
-For local development from this repository:
+For local development from this repository, compile with a local package path
+and use the same import shape:
 
 ```typst
-#import "lib.typ": impose, repeat
+#import "@preview/sheetwise:0.1.0": impose, repeat
 ```
 
 Compile all local examples and tests with:

@@ -1,4 +1,4 @@
-#import "../lib.typ": impose, marks-only
+#import "@preview/sheetwise:0.1.0": impose, marks-only
 
 #impose(
   marks-only(

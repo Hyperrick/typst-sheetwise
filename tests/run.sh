@@ -5,12 +5,18 @@ ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 cd "$ROOT"
 
 mkdir -p build examples/build
+PACKAGE_PATH="$ROOT/build/package-path"
+PACKAGE_DIR="$PACKAGE_PATH/preview/sheetwise/0.1.0"
+rm -rf "$PACKAGE_PATH"
+mkdir -p "$PACKAGE_DIR"
+cp lib.typ typst.toml "$PACKAGE_DIR/"
+cp -R src "$PACKAGE_DIR/"
 
 compile_root() {
   input=$1
   output=$2
 
-  typst compile --root . "$input" "$output"
+  typst compile --root . --package-path "$PACKAGE_PATH" "$input" "$output"
 }
 
 for name in \
