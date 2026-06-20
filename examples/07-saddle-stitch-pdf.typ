@@ -3,6 +3,7 @@
 #impose(
   booklet(
     read("build/booklet-source.pdf", encoding: none),
+    source-name: "booklet-source.pdf",
     page-count: 8,
     creep: (paper-thickness: 0.12mm),
   ),
@@ -13,7 +14,7 @@
   gap: 0mm,
   bleed: 3mm,
   safe: 5mm,
-  marks: (crop: true, bleed: true, safe: true, registration: true, color-bar: true, fold: true),
+  marks: (crop: true, bleed: true, safe: true, registration: true, color-bar: true, fold: true, file-header: true, page-border: true),
   proof: true,
   slug: (job: "saddle-stitch PDF", sheet: true, bleed: true),
 )

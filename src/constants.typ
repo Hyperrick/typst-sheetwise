@@ -22,13 +22,18 @@
   color: _mark-black,
   registration-color: registration-color,
   length: 5mm,
-  offset: auto,
+  offset: 3.1751mm,
   bleed-offset: 0pt,
   no-bleed-offset: 2mm,
-  thickness: 0.25pt,
+  thickness: 0.1764mm,
   knockout: true,
   knockout-color: _paper-white,
   knockout-padding: 0.7pt,
+  file-header-size: 5pt,
+  file-header-color: _label-color,
+  file-header-inset: 1mm,
+  page-border-color: _mark-black,
+  page-border-thickness: 0.1764mm,
 )
 
 #let _default-marks = (
@@ -39,6 +44,8 @@
   registration: false,
   color-bar: false,
   fold: false,
+  file-header: false,
+  page-border: false,
 )
 
 #let _disabled-marks = (
@@ -49,4 +56,6 @@
   registration: false,
   color-bar: false,
   fold: false,
+  file-header: false,
+  page-border: false,
 )

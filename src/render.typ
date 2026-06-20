@@ -123,7 +123,7 @@
   slots
 }
 
-#let _draw-imposed-slot(ctx, slot, body, proof: false, label: none) = {
+#let _draw-imposed-slot(ctx, slot, body, proof: false, label: none, file-header: none) = {
   _draw-region(
     _slot-region(ctx.plan, slot, label: label),
     body: body,
@@ -133,17 +133,14 @@
     proof: proof,
     mark-style: ctx.mark-style,
     label: label,
+    file-header: file-header,
     crop-mode: ctx.crop-mode,
   )
 }
 
-#let _draw-imposed-grid-marks(ctx, occupied-slots) = {
-  _draw-grid-crop-marks(ctx.plan, ctx.bleed, ctx.mark-style, ctx.marks, ctx.crop-mode, occupied-slots)
-}
+#let _draw-imposed-grid-marks(ctx, occupied-slots) = _draw-grid-crop-marks(ctx.plan, ctx.bleed, ctx.mark-style, ctx.marks, ctx.crop-mode, occupied-slots)
 
-#let _imposed-sheet(ctx, body, slug: none, meta: (:), fold-x: auto, fold-y: auto) = {
-  _sheet(ctx.sheet, body, slug: slug, meta: meta, marks: ctx.marks, mark-style: ctx.mark-style, fold-x: fold-x, fold-y: fold-y)
-}
+#let _imposed-sheet(ctx, body, slug: none, meta: (:), fold-x: auto, fold-y: auto) = _sheet(ctx.sheet, body, slug: slug, meta: meta, marks: ctx.marks, mark-style: ctx.mark-style, fold-x: fold-x, fold-y: fold-y)
 
 #let _render-repeat(job, ctx, cut-mode, proof, slug) = {
   let plan = ctx.plan
@@ -159,7 +156,7 @@
     #let occupied-slots = _occupied-slots-from-count(plan, copies)
     #for slot in range(plan.slots) {
       if slot < copies {
-        _draw-imposed-slot(ctx, slot, job.body, proof: proof, label: str(slot + 1))
+          _draw-imposed-slot(ctx, slot, job.body, proof: proof, label: str(slot + 1), file-header: _get(job, "file-header", none))
       }
     }
     #_draw-imposed-grid-marks(ctx, occupied-slots)
@@ -173,7 +170,7 @@
         if slot < copies {
           let back-slot = _duplex-slot(plan, slot, flip)
           occupied-slots.push(back-slot)
-          _draw-imposed-slot(ctx, back-slot, _rotated(back, back-rotation), proof: proof, label: str(slot + 1) + " back")
+          _draw-imposed-slot(ctx, back-slot, _rotated(back, back-rotation), proof: proof, label: str(slot + 1) + " back", file-header: _get(job, "back-file-header", none))
         }
       }
       #_draw-imposed-grid-marks(ctx, occupied-slots)
@@ -186,12 +183,15 @@
   image(source, page: page, width: width, height: height, fit: fit, alt: alt)
 }
 
+#let _source-label(source-name, page, source-page-count: auto) = if source-name == none or (source-page-count != auto and page > source-page-count) { none } else { str(source-name) + ":" + str(page) }
+
 #let _render-pdf(job, ctx, cut-mode, proof, slug) = {
   let duplex = _get(job, "duplex", false)
   let back-source = _get(job, "back-source", none)
   _validate-duplex-back(duplex, back-source, "back-source", "pdf")
   let page = _positive-int(_get(job, "page", 1), "page")
   let back-page = if duplex { _positive-int(_get(job, "back-page", 1), "back-page") } else { _get(job, "back-page", 1) }
+  let back-source-name = if _get(job, "back-source-name", auto) == auto { _get(job, "source-name", none) } else { _get(job, "back-source-name", none) }
   let front = _pdf-image(job.source, page, 100%, 100%, fit: _get(job, "fit", "stretch"), alt: _get(job, "alt", none))
   let back = if duplex {
     let back-fit = if _get(job, "back-fit", auto) == auto { _get(job, "fit", "stretch") } else { _get(job, "back-fit", auto) }
@@ -207,6 +207,8 @@
     back: back,
     back-rotation: _get(job, "back-rotation", 180deg),
     flip: _get(job, "flip", "long-edge"),
+    file-header: _source-label(_get(job, "source-name", none), page),
+    back-file-header: _source-label(back-source-name, back-page),
     body: front,
   )
   _render-repeat(repeat-job, ctx, cut-mode, proof, slug)
@@ -488,8 +490,8 @@
     }
     let creep-offset = _creep-amount(max-creep, sheet-index, sheets)
     _imposed-sheet(ctx, slug: slug, fold-x: sheet.width / 2, meta: _sheet-meta(sheet-index + 1, sheets, side, plan: plan, bleed: ctx.bleed, cut-mode: "booklet"))[
-      #_draw-imposed-slot(ctx, 0, _pdf-page(job.source, pair.left, trim.width, trim.height, dx: creep-offset, source-page-count: job.at("page-count"), fit: _get(job, "fit", "stretch"), alt: _get(job, "alt", none)), proof: proof, label: str(pair.left))
-      #_draw-imposed-slot(ctx, 1, _pdf-page(job.source, pair.right, trim.width, trim.height, dx: -creep-offset, source-page-count: job.at("page-count"), fit: _get(job, "fit", "stretch"), alt: _get(job, "alt", none)), proof: proof, label: str(pair.right))
+      #_draw-imposed-slot(ctx, 0, _pdf-page(job.source, pair.left, trim.width, trim.height, dx: creep-offset, source-page-count: job.at("page-count"), fit: _get(job, "fit", "stretch"), alt: _get(job, "alt", none)), proof: proof, label: str(pair.left), file-header: _source-label(_get(job, "source-name", none), pair.left, source-page-count: job.at("page-count")))
+      #_draw-imposed-slot(ctx, 1, _pdf-page(job.source, pair.right, trim.width, trim.height, dx: -creep-offset, source-page-count: job.at("page-count"), fit: _get(job, "fit", "stretch"), alt: _get(job, "alt", none)), proof: proof, label: str(pair.right), file-header: _source-label(_get(job, "source-name", none), pair.right, source-page-count: job.at("page-count")))
       #_draw-imposed-grid-marks(ctx, (0, 1))
     ]
   }

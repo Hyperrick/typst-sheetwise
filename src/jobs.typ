@@ -49,12 +49,14 @@
 
 #let pdf(
   source,
+  source-name: none,
   page: 1,
   fit: "stretch",
   alt: none,
   copies: auto,
   duplex: false,
   back-source: none,
+  back-source-name: auto,
   back-page: 1,
   back-fit: auto,
   back-alt: none,
@@ -63,12 +65,14 @@
 ) = (
   kind: "pdf",
   source: source,
+  source-name: source-name,
   page: page,
   fit: fit,
   alt: alt,
   copies: copies,
   duplex: duplex,
   back-source: back-source,
+  back-source-name: back-source-name,
   back-page: back-page,
   back-fit: back-fit,
   back-alt: back-alt,
@@ -78,6 +82,7 @@
 
 #let booklet(
   source,
+  source-name: none,
   page-count: auto,
   fit: "stretch",
   alt: none,
@@ -89,6 +94,7 @@
 ) = (
   kind: "booklet",
   source: source,
+  source-name: source-name,
   page-count: page-count,
   fit: fit,
   alt: alt,

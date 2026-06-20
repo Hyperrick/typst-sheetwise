@@ -254,6 +254,14 @@
   result
 }
 
+#let _file-header(region, bleed, message, style) = {
+  let inset = _non-negative(style.at("file-header-inset"), "mark-style.file-header-inset")
+  let y = if bleed > 0pt { region.y - bleed + inset } else { region.y + inset }
+  place(top + left, dx: region.x + inset, dy: y)[
+    #text(size: _positive(style.at("file-header-size"), "mark-style.file-header-size"), fill: style.at("file-header-color"))[#message]
+  ]
+}
+
 #let _draw-region(
   region,
   body: none,
@@ -263,6 +271,7 @@
   proof: false,
   mark-style: _default-mark-style,
   label: none,
+  file-header: none,
   crop-mode: "per-item",
 ) = {
   if (proof or marks.bleed) and bleed > 0pt {
@@ -287,6 +296,10 @@
 
   if (proof or marks.safe) and safe > 0pt {
     _outline(region.x + safe, region.y + safe, region.width - safe * 2, region.height - safe * 2, _safe-color)
+  }
+
+  if _get(marks, "file-header", false) and file-header != none {
+    _file-header(region, bleed, file-header, mark-style)
   }
 
   if marks.crop and crop-mode == "per-item" {
@@ -342,7 +355,21 @@
   }
 }
 
+#let _page-border(sheet, style) = {
+  _outline(
+    0pt,
+    0pt,
+    sheet.width,
+    sheet.height,
+    style.at("page-border-color"),
+    thickness: _positive(style.at("page-border-thickness"), "mark-style.page-border-thickness"),
+  )
+}
+
 #let _sheet-marks(sheet, marks, mark-style, fold-x: auto, fold-y: auto) = {
+  if _get(marks, "page-border", false) {
+    _page-border(sheet, mark-style)
+  }
   if marks.registration {
     _sheet-registration-marks(sheet, mark-style)
   }

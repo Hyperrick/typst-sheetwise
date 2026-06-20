@@ -1,4 +1,4 @@
-#import "../lib.typ": booklet-plan, grid-plan, impose, marks-only, paper-size, registration-color, repeat, sequence, variants
+#import "../lib.typ": booklet, booklet-plan, grid-plan, impose, marks-only, paper-size, pdf, registration-color, repeat, sequence, variants
 
 #let a4 = paper-size("a4")
 #assert.eq(a4.width, 210mm)
@@ -43,21 +43,28 @@
 #assert.eq(auto-plan.item.width, 40mm)
 #assert.eq(auto-plan.item.height, 125mm)
 
-#let booklet = booklet-plan(8)
-#assert.eq(booklet.len(), 2)
-#assert.eq(booklet.at(0).front.left, 8)
-#assert.eq(booklet.at(0).front.right, 1)
-#assert.eq(booklet.at(0).back.left, 2)
-#assert.eq(booklet.at(0).back.right, 7)
-#assert.eq(booklet.at(1).front.left, 6)
-#assert.eq(booklet.at(1).front.right, 3)
-#assert.eq(booklet.at(1).back.left, 4)
-#assert.eq(booklet.at(1).back.right, 5)
+#let booklet-pages = booklet-plan(8)
+#assert.eq(booklet-pages.len(), 2)
+#assert.eq(booklet-pages.at(0).front.left, 8)
+#assert.eq(booklet-pages.at(0).front.right, 1)
+#assert.eq(booklet-pages.at(0).back.left, 2)
+#assert.eq(booklet-pages.at(0).back.right, 7)
+#assert.eq(booklet-pages.at(1).front.left, 6)
+#assert.eq(booklet-pages.at(1).front.right, 3)
+#assert.eq(booklet-pages.at(1).back.left, 4)
+#assert.eq(booklet-pages.at(1).back.right, 5)
 
 #let padded = booklet-plan(10, blank-policy: "end")
 #assert.eq(padded.len(), 3)
 #assert.eq(padded.at(0).front.left, 12)
 #assert.eq(padded.at(0).front.right, 1)
+
+#let pdf-job = pdf("front.pdf", source-name: "front.pdf", page: 2, duplex: true, back-source: "back.pdf", back-source-name: "back.pdf", back-page: 3)
+#assert.eq(pdf-job.at("source-name"), "front.pdf")
+#assert.eq(pdf-job.at("back-source-name"), "back.pdf")
+
+#let booklet-job = booklet("booklet.pdf", source-name: "booklet.pdf", page-count: 8)
+#assert.eq(booklet-job.at("source-name"), "booklet.pdf")
 
 Smoke tests passed.
 
@@ -74,7 +81,7 @@ Smoke tests passed.
   margin: 10mm,
   gap: 0mm,
   cut-mode: "single",
-  marks: (crop: true),
+  marks: (crop: true, page-border: true),
 )
 
 #pagebreak()

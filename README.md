@@ -76,7 +76,7 @@ and use the same import shape:
 #import "@preview/sheetwise:0.1.0": impose, repeat
 ```
 
-Compile all local examples and tests with:
+If you cloned the source repository, compile all local examples and tests with:
 
 ```sh
 sh tests/run.sh
@@ -120,13 +120,13 @@ Use this mode when the design is already compiled. Prefer passing PDF bytes with
 #import "@preview/sheetwise:0.1.0": impose, pdf
 
 #impose(
-  pdf(read("card.pdf", encoding: none)),
+  pdf(read("card.pdf", encoding: none), source-name: "card.pdf"),
   paper: "a4",
   trim-size: (85mm, 55mm),
   cut-mode: "double",
   gap: 6mm,
   bleed: 3mm,
-  marks: (crop: true, registration: true),
+  marks: (crop: true, registration: true, file-header: true),
 )
 ```
 
@@ -211,6 +211,8 @@ marks: (
   registration: true,
   color-bar: true,
   fold: false,
+  file-header: false,
+  page-border: false,
 )
 ```
 
@@ -223,6 +225,8 @@ marks: (
 | `registration` | `false` | Draw four registration marks on the sheet. |
 | `color-bar` | `false` | Draw CMYK and gray color patches. |
 | `fold` | `false` | Draw fold marks, mainly useful for booklets. |
+| `file-header` | `false` | Draw per-PDF source labels such as `flyer.pdf:2` when PDF jobs provide `source-name`. |
+| `page-border` | `false` | Draw a thin border around the full output sheet. Works for Typst-content and finished-PDF jobs. |
 
 `proof: true` adds colored trim/bleed/safe outlines and labels for checking
 placement. It is useful for development proofs, not final print output.
@@ -236,18 +240,29 @@ mark-style: (
   color: cmyk(0%, 0%, 0%, 100%),
   registration-color: cmyk(100%, 100%, 100%, 100%),
   length: 5mm,
-  offset: auto,
+  offset: 3.1751mm,
   bleed-offset: 0pt,
   no-bleed-offset: 2mm,
-  thickness: 0.25pt,
+  thickness: 0.1764mm,
   knockout: true,
   knockout-color: cmyk(0%, 0%, 0%, 0%),
   knockout-padding: 0.7pt,
+  file-header-size: 5pt,
+  file-header-color: cmyk(0%, 0%, 0%, 70%),
+  file-header-inset: 1mm,
+  page-border-color: cmyk(0%, 0%, 0%, 100%),
+  page-border-thickness: 0.1764mm,
 )
 ```
 
 Registration and fold marks use `registration-color`, which defaults to 4C
-process black. Crop marks use `color`, which defaults to K-only black.
+process black. Crop marks use `color`, which defaults to K-only black. The
+default crop mark offset and width follow common InDesign-style values:
+`offset: 3.1751mm` and `thickness: 0.1764mm`.
+
+`file-header` needs explicit PDF metadata because `read(..., encoding: none)`
+passes bytes, not the original path. Set `source-name` so the imposed sheet can
+show `filename:page` in the bleed area of each placed PDF page.
 
 ### Slug Metadata
 
@@ -347,6 +362,7 @@ PDF.
 #impose(
   pdf(
     read("front.pdf", encoding: none),
+    source-name: "front.pdf",
     page: 1,
     copies: auto,
   ),
@@ -360,12 +376,14 @@ Options:
 | Option | Default | Meaning |
 | --- | --- | --- |
 | `source` | required | PDF bytes or a source accepted by Typst `image`. |
+| `source-name` | `none` | Optional filename printed by `marks.file-header`, for example `front.pdf`. |
 | `page` | `1` | Source PDF page to place. |
 | `fit` | `"stretch"` | Passed to Typst `image`. |
 | `alt` | `none` | Alternative text for the placed image. |
 | `copies` | `auto` | Number of occupied slots. |
 | `duplex` | `false` | Emit a back side. |
 | `back-source` | `none` | Back-side PDF source. Required when `duplex: true`. |
+| `back-source-name` | `auto` | Filename for the back side. `auto` reuses `source-name`; set it when the back comes from a different PDF. |
 | `back-page` | `1` | Back-side page number. |
 | `back-fit` | `auto` | Uses `fit` when left as `auto`. |
 | `back-alt` | `none` | Alternative text for the back-side image. |
@@ -381,6 +399,7 @@ front and back sides for each booklet sheet.
 #impose(
   booklet(
     read("booklet-source.pdf", encoding: none),
+    source-name: "booklet-source.pdf",
     page-count: 8,
     creep: (paper-thickness: 0.12mm),
   ),
@@ -396,6 +415,7 @@ Options:
 | Option | Default | Meaning |
 | --- | --- | --- |
 | `source` | required | Finished source PDF bytes. |
+| `source-name` | `none` | Optional filename printed by `marks.file-header` for each placed booklet page. |
 | `page-count` | required | Number of source pages before optional blank padding. |
 | `fit` | `"stretch"` | Passed to Typst `image`. |
 | `alt` | `none` | Alternative text for placed pages. |

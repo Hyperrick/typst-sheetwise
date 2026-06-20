@@ -60,11 +60,14 @@
 #pagebreak()
 
 #impose(
-  pdf(read("../build/business-card-source.pdf", encoding: none)),
+  pdf(
+    read("../build/business-card-source.pdf", encoding: none),
+    source-name: "business-card-source.pdf",
+  ),
   paper: "a4",
   trim-size: (85mm, 55mm),
   cut-mode: "double",
-  marks: (crop: true, registration: true),
+  marks: (crop: true, registration: true, file-header: true, page-border: true),
 )
 
 #pagebreak()
@@ -72,13 +75,14 @@
 #impose(
   booklet(
     read("../examples/build/booklet-source.pdf", encoding: none),
+    source-name: "booklet-source.pdf",
     page-count: 8,
     creep: (paper-thickness: 0.12mm),
   ),
   paper: "sra3",
   orientation: "landscape",
   trim-size: (148mm, 210mm),
-  marks: (crop: true, registration: true, color-bar: true, fold: true),
+  marks: (crop: true, registration: true, color-bar: true, fold: true, file-header: true),
 )
 
 #pagebreak()

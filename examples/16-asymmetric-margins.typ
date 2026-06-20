@@ -9,7 +9,7 @@
   trim-size: (85mm, 55mm),
   margin: (left: 18mm, right: 8mm, top: 12mm, bottom: 28mm),
   gap: 4mm,
-  marks: (crop: true, safe: true, registration: true),
+  marks: (crop: true, safe: true, registration: true, page-border: true),
   safe: 4mm,
   proof: true,
   slug: (job: "asymmetric margins", sheet: true, grid: true),

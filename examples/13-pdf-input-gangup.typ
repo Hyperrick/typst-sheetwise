@@ -1,7 +1,10 @@
 #import "@preview/sheetwise:0.1.0": impose, pdf
 
 #impose(
-  pdf(read("build/business-card-source.pdf", encoding: none)),
+  pdf(
+    read("build/business-card-source.pdf", encoding: none),
+    source-name: "business-card-source.pdf",
+  ),
   paper: "a4",
   trim-size: (85mm, 55mm),
   margin: 12mm,
@@ -9,7 +12,7 @@
   cut-mode: "double",
   bleed: 0pt,
   safe: 4mm,
-  marks: (crop: true, safe: true, registration: true, color-bar: true),
+  marks: (crop: true, safe: true, registration: true, color-bar: true, file-header: true, page-border: true),
   proof: true,
   slug: (
     job: "finished PDF input",
